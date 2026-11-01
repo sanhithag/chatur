@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  html[lang="te"] {
+    font-family: 'Noto Sans Telugu', system-ui, sans-serif;
+  }
+
+  html[lang="hi"] {
+    font-family: 'Noto Sans Devanagari', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-800 text-white font-medium text-sm hover:bg-primary-700 active:bg-primary-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm hover:bg-slate-50 active:bg-slate-100 transition-colors disabled:opacity-50;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-600 text-white font-medium text-sm hover:bg-accent-700 active:bg-accent-800 transition-colors disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white font-medium text-sm hover:bg-red-700 transition-colors disabled:opacity-50;
+  }
+
+  .card {
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-slate-200;
+  }
+
+  .card-body {
+    @apply px-6 py-5;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-slate-700 mb-1;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-blue {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800;
+  }
+
+  .badge-green {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+  }
+
+  .badge-amber {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+  }
+
+  .badge-red {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+  }
+
+  .badge-slate {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700;
+  }
+
+  .mastery-bar {
+    @apply w-full bg-slate-200 rounded-full h-2 overflow-hidden;
+  }
+
+  .mastery-fill {
+    @apply h-2 rounded-full transition-all duration-500;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-slate-100; }
+::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }

@@ -1,0 +1,110 @@
+# ==============================================================================
+# CHATUR — UNIFIED ROOT .GITIGNORE (Python Backend + React/TypeScript Frontend)
+# ==============================================================================
+
+# --- Operating System Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# --- IDE & Editor Artifacts ---
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# --- Python & Backend Artifacts ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+chatur-backend/.venv/
+.venv/
+venv/
+ENV/
+env/
+
+# Python Unit Test & Coverage Caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Database Files & SQLite Run-time DBs
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+chatur-backend/chatur.db
+chatur-backend/*.db
+
+# Backend Logs & Environments
+chatur-backend/.env
+chatur-backend/.env.*
+*.log
+
+# --- Node.js & React Frontend Artifacts ---
+node_modules/
+chatur-frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Frontend Production Builds
+chatur-frontend/dist/
+chatur-frontend/dist-ssr/
+dist/
+
+# Vite & TypeScript Caches
+.vite/
+chatur-frontend/.vite/
+*.tsbuildinfo
+
+# Frontend Environment Variables
+chatur-frontend/.env
+chatur-frontend/.env.local
+chatur-frontend/.env.development.local
+chatur-frontend/.env.test.local
+chatur-frontend/.env.production.local
+
+# Service Worker & PWA Build Caches
+chatur-frontend/public/sw-cache/
+
+# --- Temporary & Scratch Dirs ---
+tmp/
+temp/
+scratch/

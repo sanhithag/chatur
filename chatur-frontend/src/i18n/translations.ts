@@ -1,0 +1,191 @@
+// ─── i18n Translation Dictionary ────────────────────────────────────────────
+// All UI strings in English, Telugu and Hindi.
+// Dynamic content from the API uses the user's preferred_lang field.
+
+export type Lang = 'en' | 'te' | 'hi'
+
+type TranslationMap = Record<string, Record<Lang, string>>
+
+export const translations: TranslationMap = {
+  // ── App & Auth ──────────────────────────────────────────────────────────────
+  app_name:         { en: 'CHATUR', te: 'చతుర్', hi: 'चतुर' },
+  app_tagline:      { en: 'Every learner. Every concept. Their own learning path.',
+                      te: 'ప్రతి అభ్యాసకుడు. ప్రతి భావన. వారి స్వంత నేర్చుకునే మార్గం.',
+                      hi: 'हर शिक्षार्थी। हर अवधारणा। उनकी अपनी सीखने की राह।' },
+  sign_in:          { en: 'Sign In', te: 'సైన్ ఇన్ చేయండి', hi: 'साइन इन करें' },
+  sign_out:         { en: 'Sign Out', te: 'సైన్ అవుట్', hi: 'साइन आउट' },
+  username:         { en: 'Username', te: 'వినియోగదారు పేరు', hi: 'उपयोगकर्ता नाम' },
+  password:         { en: 'Password', te: 'పాస్‌వర్డ్', hi: 'पासवर्ड' },
+  select_role:      { en: 'Sign in as', te: 'ఇలా సైన్ ఇన్ చేయండి', hi: 'इस रूप में साइन इन करें' },
+  role_student:     { en: 'Student', te: 'విద్యార్థి', hi: 'छात्र' },
+  role_teacher:     { en: 'Teacher', te: 'ఉపాధ్యాయుడు', hi: 'शिक्षक' },
+  role_parent:      { en: 'Parent', te: 'తల్లిదండ్రులు', hi: 'अभिभावक' },
+  role_admin:       { en: 'Administrator', te: 'నిర్వాహకుడు', hi: 'प्रशासक' },
+  login_error:      { en: 'Invalid username or password.', te: 'తప్పుడు వినియోగదారు పేరు లేదా పాస్‌వర్డ్.', hi: 'गलत उपयोगकर्ता नाम या पासवर्ड।' },
+  signing_in:       { en: 'Signing in…', te: 'సైన్ ఇన్ అవుతోంది…', hi: 'साइन इन हो रहा है…' },
+
+  // ── Navigation ──────────────────────────────────────────────────────────────
+  nav_dashboard:    { en: 'Dashboard', te: 'డాష్‌బోర్డ్', hi: 'डैशबोर्ड' },
+  nav_learn:        { en: 'Learn', te: 'నేర్చుకోండి', hi: 'सीखें' },
+  nav_solve:        { en: 'Solve', te: 'సాధించండి', hi: 'हल करें' },
+  nav_test:         { en: 'Test', te: 'పరీక్ష', hi: 'परीक्षा' },
+  nav_students:     { en: 'Students', te: 'విద్యార్థులు', hi: 'छात्र' },
+  nav_heatmap:      { en: 'Class Heatmap', te: 'తరగతి హీట్‌మ్యాప్', hi: 'कक्षा हीटमैप' },
+  nav_review:       { en: 'Review Queue', te: 'సమీక్ష క్యూ', hi: 'समीक्षा कतार' },
+  nav_groups:       { en: 'Remedial Groups', te: 'రెమెడియల్ గ్రూపులు', hi: 'उपचारात्मक समूह' },
+  nav_content:      { en: 'Content', te: 'కంటెంట్', hi: 'सामग्री' },
+  nav_curriculum:   { en: 'Curriculum', te: 'పాఠ్యక్రమం', hi: 'पाठ्यक्रम' },
+  nav_users:        { en: 'Users', te: 'వినియోగదారులు', hi: 'उपयोगकर्ता' },
+  nav_reports:      { en: 'Reports', te: 'నివేదికలు', hi: 'रिपोर्ट' },
+  nav_children:     { en: 'My Children', te: 'నా పిల్లలు', hi: 'मेरे बच्चे' },
+  nav_progress:     { en: 'Progress', te: 'పురోగతి', hi: 'प्रगति' },
+  nav_impact:       { en: 'Impact', te: 'ప్రభావం', hi: 'प्रभाव' },
+  nav_settings:     { en: 'Settings', te: 'సెట్టింగ్‌లు', hi: 'सेटिंग्स' },
+  nav_schools:      { en: 'Schools', te: 'పాఠశాలలు', hi: 'स्कूल' },
+
+  // ── Common ──────────────────────────────────────────────────────────────────
+  loading:          { en: 'Loading…', te: 'లోడ్ అవుతోంది…', hi: 'लोड हो रहा है…' },
+  error:            { en: 'Something went wrong.', te: 'ఏదో తప్పు జరిగింది.', hi: 'कुछ गलत हुआ।' },
+  retry:            { en: 'Retry', te: 'మళ్లీ ప్రయత్నించండి', hi: 'पुनः प्रयास करें' },
+  save:             { en: 'Save', te: 'సేవ్ చేయండి', hi: 'सहेजें' },
+  cancel:           { en: 'Cancel', te: 'రద్దు చేయండి', hi: 'रद्द करें' },
+  confirm:          { en: 'Confirm', te: 'నిర్ధారించు', hi: 'पुष्टि करें' },
+  approve:          { en: 'Approve', te: 'ఆమోదించు', hi: 'मंज़ूर करें' },
+  reject:           { en: 'Reject', te: 'తిరస్కరించు', hi: 'अस्वीकार करें' },
+  postpone:         { en: 'Postpone', te: 'వాయిదా వేయి', hi: 'स्थगित करें' },
+  view_all:         { en: 'View all', te: 'అన్నీ చూడండి', hi: 'सभी देखें' },
+  no_data:          { en: 'No data available.', te: 'డేటా అందుబాటులో లేదు.', hi: 'कोई डेटा उपलब्ध नहीं।' },
+  search:           { en: 'Search…', te: 'వెతకండి…', hi: 'खोजें…' },
+  filter:           { en: 'Filter', te: 'వడపోత', hi: 'फ़िल्टर' },
+  export:           { en: 'Export', te: 'ఎగుమతి', hi: 'निर्यात' },
+  print:            { en: 'Print', te: 'ముద్రించు', hi: 'प्रिंट' },
+  add:              { en: 'Add', te: 'జోడించు', hi: 'जोड़ें' },
+  edit:             { en: 'Edit', te: 'సవరించు', hi: 'संपादित करें' },
+  delete:           { en: 'Delete', te: 'తొలగించు', hi: 'हटाएं' },
+  active:           { en: 'Active', te: 'సక్రియ', hi: 'सक्रिय' },
+  inactive:         { en: 'Inactive', te: 'నిష్క్రియ', hi: 'निष्क्रिय' },
+  pending:          { en: 'Pending', te: 'పెండింగ్', hi: 'लंबित' },
+  approved:         { en: 'Approved', te: 'ఆమోదించబడింది', hi: 'स्वीकृत' },
+  rejected:         { en: 'Rejected', te: 'తిరస్కరించబడింది', hi: 'अस्वीकृत' },
+
+  // ── Student Dashboard ────────────────────────────────────────────────────────
+  welcome_back:     { en: "Welcome back", te: "తిరిగి స్వాగతం", hi: "वापस स्वागत है" },
+  today_plan:       { en: "Today's Learning Plan", te: "ఈ రోజు నేర్చుకునే ప్రణాళిక", hi: "आज की सीख योजना" },
+  xp_points:        { en: 'XP', te: 'XP', hi: 'XP' },
+  streak_days:      { en: 'day streak', te: 'రోజుల స్ట్రీక్', hi: 'दिन की स्ट्रीक' },
+  my_subjects:      { en: 'My Subjects', te: 'నా విషయాలు', hi: 'मेरे विषय' },
+  concept_mastery:  { en: 'Concept Mastery', te: 'భావన నైపుణ్యం', hi: 'अवधारणा महारत' },
+  working_level:    { en: 'Working Level', te: 'పని చేసే స్థాయి', hi: 'कार्य स्तर' },
+  grade_target:     { en: 'Grade Target', te: 'తరగతి లక్ష్యం', hi: 'ग्रेड लक्ष्य' },
+  foundation_path:  { en: 'Foundation Path', te: 'ఫౌండేషన్ పాత్', hi: 'फ़ाउंडेशन पाथ' },
+  start_learning:   { en: 'Start Learning', te: 'నేర్చుకోవడం ప్రారంభించండి', hi: 'सीखना शुरू करें' },
+  continue:         { en: 'Continue', te: 'కొనసాగించండి', hi: 'जारी रखें' },
+  level_private:    { en: 'Your level is private — only you and your teacher can see it.',
+                      te: 'మీ స్థాయి ప్రైవేట్ — మీకు మరియు మీ ఉపాధ్యాయుడికి మాత్రమే కనిపిస్తుంది.',
+                      hi: 'आपका स्तर निजी है — केवल आप और आपके शिक्षक देख सकते हैं।' },
+  mastery_pct:      { en: 'Mastery', te: 'నైపుణ్యం', hi: 'महारत' },
+
+  // ── Teacher Dashboard ────────────────────────────────────────────────────────
+  class_overview:       { en: 'Class Overview', te: 'తరగతి అవలోకనం', hi: 'कक्षा अवलोकन' },
+  total_students:       { en: 'Total Students', te: 'మొత్తం విద్యార్థులు', hi: 'कुल छात्र' },
+  pending_reviews:      { en: 'Pending Reviews', te: 'పెండింగ్ సమీక్షలు', hi: 'लंबित समीक्षाएँ' },
+  concepts_with_gaps:   { en: 'Concepts With Gaps', te: 'లోపాలతో భావనలు', hi: 'कमियों वाली अवधारणाएँ' },
+  students_attention:   { en: 'Students Needing Attention', te: 'శ్రద్ధ అవసరమైన విద్యార్థులు', hi: 'ध्यान देने योग्य छात्र' },
+  review_ai_advisory:   { en: 'AI Advisory — You Decide', te: 'AI సలహా — మీరు నిర్ణయిస్తారు', hi: 'AI सलाह — आप तय करते हैं' },
+  proposal_down:        { en: 'Foundation Path', te: 'ఫౌండేషన్ పాత్', hi: 'फ़ाउंडेशन पाथ' },
+  proposal_up:          { en: 'Level Up', te: 'లెవల్ అప్', hi: 'लेवल अप' },
+  proposal_revise:      { en: 'Revision', te: 'పునశ్చరణ', hi: 'पुनरावृत्ति' },
+  proposal_reteach:     { en: 'Re-teach', te: 'మళ్లీ బోధించు', hi: 'पुनः पढ़ाएँ' },
+  evidence_label:       { en: 'Evidence', te: 'ఆధారాలు', hi: 'साक्ष्य' },
+  teacher_notes_ph:     { en: 'Add notes (optional)…', te: 'నోట్లు జోడించండి (ఐచ్ఛికం)…', hi: 'नोट्स जोड़ें (वैकल्पिक)…' },
+  decision_saved:       { en: 'Decision saved.', te: 'నిర్ణయం సేవ్ అయింది.', hi: 'निर्णय सहेजा गया।' },
+  heatmap_title:        { en: 'Class Concept Heatmap', te: 'తరగతి భావన హీట్‌మ్యాప్', hi: 'कक्षा अवधारणा हीटमैप' },
+  class_label:          { en: 'Class', te: 'తరగతి', hi: 'कक्षा' },
+  no_pending_proposals: { en: 'No pending proposals. The system requires two consistent results before recommending a change.',
+                          te: 'పెండింగ్ ప్రతిపాదనలు లేవు. మార్పు సిఫారసు చేయడానికి రెండు స్థిర ఫలితాలు అవసరం.',
+                          hi: 'कोई लंबित प्रस्ताव नहीं। बदलाव की सिफारिश के लिए दो लगातार परिणाम ज़रूरी हैं।' },
+
+  // ── Parent Dashboard ─────────────────────────────────────────────────────────
+  child_progress:       { en: "Child's Progress", te: "పిల్లల పురోగతి", hi: "बच्चे की प्रगति" },
+  on_track:             { en: 'On track', te: 'సరైన దారిలో', hi: 'सही राह पर' },
+  needs_support:        { en: 'Needs support in', te: 'సహాయం అవసరం', hi: 'सहायता चाहिए' },
+  weekly_tip:           { en: "This week's tip", te: "ఈ వారం సూచన", hi: "इस सप्ताह की सलाह" },
+  weekly_tip_text:      { en: '10 minutes of daily practice on the current step. Ask your child to explain a concept aloud.',
+                          te: 'ప్రస్తుత దశపై రోజుకు 10 నిమిషాల సాధన. పిల్లను ఒక భావనను బిగ్గరగా వివరించమని అడగండి.',
+                          hi: 'वर्तमान चरण पर रोज़ 10 मिनट अभ्यास। बच्चे से एक अवधारणा ज़ोर से समझाने को कहें।' },
+  subject_progress:     { en: 'Subject Progress', te: 'విషయ పురోగతి', hi: 'विषय प्रगति' },
+
+  // ── Admin Dashboard ──────────────────────────────────────────────────────────
+  admin_dashboard:      { en: 'Administration', te: 'నిర్వహణ', hi: 'प्रशासन' },
+  school_management:    { en: 'School Management', te: 'పాఠశాల నిర్వహణ', hi: 'स्कूल प्रबंधन' },
+  curriculum_coverage:  { en: 'Curriculum Coverage', te: 'పాఠ్యక్రమ కవరేజ్', hi: 'पाठ्यक्रम कवरेज' },
+  total_concepts:       { en: 'Total Concepts', te: 'మొత్తం భావనలు', hi: 'कुल अवधारणाएँ' },
+  adaptive_ready:       { en: 'Adaptive Ready', te: 'అడాప్టివ్ సిద్ధం', hi: 'अनुकूली तैयार' },
+  awaiting_content:     { en: 'Awaiting Content', te: 'కంటెంట్ కోసం వేచి ఉంది', hi: 'सामग्री की प्रतीक्षा' },
+  user_management:      { en: 'User Management', te: 'వినియోగదారు నిర్వహణ', hi: 'उपयोगकर्ता प्रबंधन' },
+  add_user:             { en: 'Add User', te: 'వినియోగదారును జోడించండి', hi: 'उपयोगकर्ता जोड़ें' },
+  create_school:        { en: 'Create School', te: 'పాఠశాల సృష్టించండి', hi: 'स्कूल बनाएं' },
+  content_status_label: { en: 'Content Status', te: 'కంటెంట్ స్థితి', hi: 'सामग्री स्थिति' },
+
+  // ── Language ─────────────────────────────────────────────────────────────────
+  language:         { en: 'Language', te: 'భాష', hi: 'भाषा' },
+  lang_en:          { en: 'English', te: 'English', hi: 'English' },
+  lang_te:          { en: 'Telugu', te: 'తెలుగు', hi: 'తెలుగు' },
+  lang_hi:          { en: 'Hindi', te: 'हिन्दी', hi: 'हिन्दी' },
+
+  // ── Learn, Solve & Test Triad ────────────────────────────────────────────────
+  style_simple:             { en: 'Simple', te: 'సాధారణం', hi: 'सरल' },
+  style_detailed:           { en: 'Detailed', te: 'వివరణాత్మక', hi: 'विस्तृत' },
+  style_visual:             { en: 'Visual', te: 'చిత్రరూప', hi: 'चित्रात्मक' },
+  style_analogy:            { en: 'Real-world Analogy', te: 'నిజజీవిత సారూప్యత', hi: 'वास्तविक सादृश्य' },
+  style_worked_example:     { en: 'Worked Example', te: 'సాధించిన ఉదాహరణ', hi: 'हल किया गया उदाहरण' },
+  grade_level:              { en: 'Class', te: 'తరగతి', hi: 'कक्षा' },
+  foundation_path_active:   { en: 'Foundation Path Active', te: 'ఫౌండేషన్ పాత్ సక్రియం', hi: 'फ़ाउंडेशन पाथ सक्रिय' },
+  foundation_path_explainer:{ en: 'Strengthening foundational concept first to master current grade', te: 'ప్రస్తుత తరగతిని సాధించడానికి ముందు పునాది భావనను బలోపేతం చేస్తున్నాము', hi: 'वर्तमान कक्षा में महारत हासिल करने के लिए पहले बुनियादी अवधारणा को मज़बूत कर रहे हैं' },
+  listen:                   { en: 'Listen', te: 'వినండి', hi: 'सुनें' },
+  stop_audio:               { en: 'Stop', te: 'ఆపండి', hi: 'रोकें' },
+  key_terminology:          { en: 'Key Terminology', te: 'ముఖ్యమైన పదాలు', hi: 'प्रमुख शब्दावली' },
+  quick_check:              { en: 'Quick Check', te: 'త్వరిత పరీక్ష', hi: 'त्वरित जाँच' },
+  explanation:              { en: 'Explanation', te: 'వివరణ', hi: 'व्याख्या' },
+  ready_to_solve:           { en: 'Practice Concepts (Solve)', te: 'సాధన చేయండి (Solve)', hi: 'अभ्यास करें (Solve)' },
+  solve_subtitle:           { en: 'Interactive Adaptive Practice', te: 'ఇంటరాక్టివ్ అడాప్టివ్ ప్రాక్టీస్', hi: 'इंटरैक्टिव अनुकूली अभ्यास' },
+  solve_adaptive_level:     { en: 'Concept-level calibrated', te: 'భావన-స్థాయి సర్దుబాటు', hi: 'अवधारणा-स्तर पर कैलिब्रेटेड' },
+  diff_easy:                { en: 'Easy', te: 'సులభం', hi: 'आसान' },
+  diff_medium:              { en: 'Medium', te: 'మధ్యస్థం', hi: 'मध्यम' },
+  diff_hard:                { en: 'Advanced', te: 'ఉన్నతం', hi: 'कठिन' },
+  need_hint:                { en: 'Need a hint?', te: 'క్లూ కావాలా?', hi: 'संकेत चाहिए?' },
+  check_answer:             { en: 'Check Answer', te: 'జవాబును తనిఖీ చేయండి', hi: 'उत्तर जांचें' },
+  checking_answer:          { en: 'Checking…', te: 'తనిఖీ చేస్తోంది…', hi: 'जांच जारी…' },
+  correct_answer_bravo:     { en: 'Correct! +10 XP 🎉', te: 'సరైనది! +10 XP 🎉', hi: 'सही उत्तर! +10 XP 🎉' },
+  incorrect_answer_learn:   { en: 'Not quite right. Let’s learn from this:', te: 'పూర్తిగా సరైనది కాదు. దీని నుండి నేర్చుకుందాం:', hi: 'पूरी तरह सही नहीं। इससे सीखते हैं:' },
+  identified_error_type:    { en: 'Diagnosis', te: 'నిర్ధారణ', hi: 'पहचान' },
+  error_prereq:             { en: 'Prerequisite Gap', te: 'ముందస్తు లోపం', hi: 'पूर्वापेक्षा कमी' },
+  error_misconception:      { en: 'Misconception', te: 'తప్పుడు భావన', hi: 'भ्रांति' },
+  error_calc:               { en: 'Calculation Slip', te: 'లెక్కల పొరపాటు', hi: 'गणना की भूल' },
+  error_language:           { en: 'Language Difficulty', te: 'భాషా ఇబ్బంది', hi: 'भाषा कठिनाई' },
+  review_micro_lesson:      { en: 'Review Lesson', te: 'పాఠం పునశ్చరణ', hi: 'पाठ दोहराएँ' },
+  next_challenge:           { en: 'Next Challenge', te: 'తదుపరి సవాలు', hi: 'अगली चुनौती' },
+  questions_total:          { en: 'Questions', te: 'ప్రశ్నలు', hi: 'प्रश्न' },
+  question:                 { en: 'Question', te: 'ప్రశ్న', hi: 'प्रश्न' },
+  of:                       { en: 'of', te: 'లో', hi: 'का' },
+  answered:                 { en: 'Answered', te: 'సమాధానం ఇచ్చారు', hi: 'उत्तर दिया' },
+  prereq_probe:             { en: 'Prerequisite Check', te: 'ముందస్తు తనిఖీ', hi: 'पूर्वापेक्षा जाँच' },
+  stretch_question:         { en: 'Challenge Question', te: 'సవాలు ప్రశ్న', hi: 'चुनौती प्रश्न' },
+  previous:                 { en: 'Previous', te: 'మునుపటిది', hi: 'पिछला' },
+  next:                     { en: 'Next', te: 'తదుపరి', hi: 'अगला' },
+  submit_assessment:        { en: 'Submit Test', te: 'పరీక్షను సమర్పించండి', hi: 'परीक्षा जमा करें' },
+  submitting:               { en: 'Submitting…', te: 'సమర్పిస్తోంది…', hi: 'जमा हो रहा है…' },
+  test_completed_title:     { en: 'Assessment Completed!', te: 'పరీక్ష పూర్తయింది!', hi: 'मूल्यांकन पूरा हुआ!' },
+  evidence_sent_to_teacher: { en: 'Evidence sent to teacher for review', te: 'సమీక్ష కోసం ఆధారాలు ఉపాధ్యాయుడికి పంపబడ్డాయి', hi: 'समीक्षा के लिए साक्ष्य शिक्षक को भेजे गए' },
+  teacher_review_notice:    { en: 'The AI has submitted a recommendation. Your teacher will review and approve the next step on your learning path.', te: 'AI ఒక సిఫార్సును సమర్పించింది. మీ ఉపాధ్యాయుడు మీ తదుపరి అభ్యాస మార్గాన్ని సమీక్షించి ఆమోదిస్తారు.', hi: 'AI ने एक सिफारिश प्रस्तुत की है। आपके शिक्षक सीखने की राह पर अगले कदम की समीक्षा और मंज़ूरी देंगे।' },
+}
+
+export function t(key: string, lang: Lang): string {
+  const entry = translations[key]
+  if (!entry) return key
+  return entry[lang] ?? entry['en'] ?? key
+}
+
+export function formatLang(lang: Lang): string {
+  return { en: 'English', te: 'తెలుగు', hi: 'हिन्दी' }[lang]
+}
