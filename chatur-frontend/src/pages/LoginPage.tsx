@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import axios from 'axios'
+import api from '@/lib/api'
 import { BookOpen, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useI18n } from '@/i18n/I18nProvider'
@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async () => {
-      const { data } = await axios.post('/api/v1/auth/login', { username, password })
+      const { data } = await api.post('/auth/login', { username, password })
       return data
     },
     onSuccess: (data) => {
