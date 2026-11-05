@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import api from '@/lib/api'
-import { BookOpen, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react'
+import { BookOpen, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight, KeyRound, Copy, Check } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useI18n } from '@/i18n/I18nProvider'
 import type { Lang } from '@/i18n/translations'
@@ -10,6 +10,40 @@ import { formatLang } from '@/i18n/translations'
 
 type Role = 'student' | 'teacher' | 'parent' | 'admin'
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset'
+
+interface DemoAccount {
+  role: Role
+  label: string
+  username: string
+  password: string
+}
+
+const DEMO_ACCOUNTS: DemoAccount[] = [
+  {
+    role: 'admin',
+    label: 'Admin',
+    username: 'admin',
+    password: 'Admin@School2024',
+  },
+  {
+    role: 'student',
+    label: 'Student',
+    username: 'student1',
+    password: 'Student@2024',
+  },
+  {
+    role: 'teacher',
+    label: 'Teacher',
+    username: 'teacher1',
+    password: 'Teacher@2024',
+  },
+  {
+    role: 'parent',
+    label: 'Parent',
+    username: 'parent1',
+    password: 'Parent@2024',
+  },
+]
 
 const ROLE_ROUTES: Record<string, string> = {
   student: '/student',
@@ -37,6 +71,25 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [copiedRole, setCopiedRole] = useState<string | null>(null)
+
+  const handleCopyCredentials = (e: React.MouseEvent, demo: DemoAccount) => {
+    e.stopPropagation()
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(`Username: ${demo.username}\nPassword: ${demo.password}`)
+    }
+    setCopiedRole(demo.role)
+    setTimeout(() => {
+      setCopiedRole(null)
+    }, 1500)
+  }
+
+  const handleSelectDemo = (demo: DemoAccount) => {
+    setRole(demo.role)
+    setUsername(demo.username)
+    setPassword(demo.password)
+    setErrorMsg(null)
+  }
 
   // Login mutation
   const loginMutation = useMutation({
@@ -155,11 +208,10 @@ export default function LoginPage() {
             <button
               key={l}
               onClick={() => setLang(l)}
-              className={`px-2.5 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
-                lang === l
-                  ? 'bg-[#ccd5ae] text-[#000000] font-bold shadow-2xs'
-                  : 'text-[#333333] hover:bg-[#e9edc9]'
-              }`}
+              className={`px-2.5 py-0.5 rounded-md font-medium transition-all cursor-pointer ${lang === l
+                ? 'bg-[#ccd5ae] text-[#000000] font-bold shadow-2xs'
+                : 'text-[#333333] hover:bg-[#e9edc9]'
+                }`}
             >
               {formatLang(l)}
             </button>
@@ -200,11 +252,10 @@ export default function LoginPage() {
                   key={r}
                   type="button"
                   onClick={() => setRole(r)}
-                  className={`py-1.5 rounded-md font-semibold transition-all capitalize cursor-pointer text-center ${
-                    role === r
-                      ? 'bg-[#ccd5ae] text-[#000000] shadow-2xs border border-[#ccd5ae]'
-                      : 'text-[#333333] hover:bg-[#e9edc9]'
-                  }`}
+                  className={`py-1.5 rounded-md font-semibold transition-all capitalize cursor-pointer text-center ${role === r
+                    ? 'bg-[#ccd5ae] text-[#000000] shadow-2xs border border-[#ccd5ae]'
+                    : 'text-[#333333] hover:bg-[#e9edc9]'
+                    }`}
                 >
                   {r}
                 </button>
@@ -379,16 +430,105 @@ export default function LoginPage() {
               {loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending || resetMutation.isPending
                 ? 'Processing…'
                 : mode === 'login'
-                ? 'Sign In'
-                : mode === 'register'
-                ? 'Create Account'
-                : mode === 'forgot'
-                ? 'Verify Account'
-                : 'Save New Password'}
+                  ? 'Sign In'
+                  : mode === 'register'
+                    ? 'Create Account'
+                    : mode === 'forgot'
+                      ? 'Verify Account'
+                      : 'Save New Password'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </form>
+
+        {/* Demo Credentials for Evaluators */}
+        {mode === 'login' && (
+          <div className="px-5 pb-5">
+            <div className="pt-3.5 border-t border-[#ccd5ae]">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-[#d4a373]" />
+                  <span className="text-xs font-bold text-[#000000]">
+                    Demo Credentials (for Evaluators)
+                  </span>
+                </div>
+                <span className="text-[10px] text-[#333333] bg-[#faedcd] px-2 py-0.5 rounded-full border border-[#ccd5ae] font-bold">
+                  Click to auto-fill
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {DEMO_ACCOUNTS.map((demo) => {
+                  const isSelected = username === demo.username && role === demo.role && password === demo.password
+                  const isCopied = copiedRole === demo.role
+
+                  return (
+                    <div
+                      key={demo.role}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleSelectDemo(demo)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleSelectDemo(demo)
+                        }
+                      }}
+                      title={`Click to auto-fill ${demo.label} credentials`}
+                      className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer relative ${isSelected
+                        ? 'bg-[#e9edc9] border-[#ccd5ae] ring-2 ring-[#d4a373]/60 shadow-xs'
+                        : 'bg-[#fefae0]/80 hover:bg-[#faedcd]/70 border-[#ccd5ae]'
+                        }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-xs text-[#000000] flex items-center gap-1.5">
+                          <span
+                            className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-600' : 'bg-[#d4a373]'
+                              }`}
+                          />
+                          {demo.label}
+                        </span>
+
+                        <div className="flex items-center gap-1">
+                          {isSelected && (
+                            <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-1 py-0.2 rounded border border-emerald-300">
+                              Active
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => handleCopyCredentials(e, demo)}
+                            title="Copy username and password"
+                            className="p-1 rounded hover:bg-white/80 text-[#666666] hover:text-[#000000] transition-colors cursor-pointer"
+                          >
+                            {isCopied ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5 text-[11px] leading-tight select-text">
+                        <div className="flex items-baseline justify-between text-[#333333]">
+                          <span className="text-[10px] text-[#666666] font-medium">User:</span>
+                          <span className="font-mono font-semibold text-[#000000]">{demo.username}</span>
+                        </div>
+                        <div className="flex items-baseline justify-between text-[#333333]">
+                          <span className="text-[10px] text-[#666666] font-medium">Pass:</span>
+                          <span className="font-mono font-semibold text-[#000000] text-[10.5px]">
+                            {demo.password}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mode Toggle Footer */}
         <div className="p-4 border-t border-[#ccd5ae] bg-[#faedcd]/20 text-center text-xs text-[#333333]">
