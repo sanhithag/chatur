@@ -15,6 +15,7 @@ from app.models.student import (
     ClassSection,
     StudentEnrollment,
     TeacherAssignment,
+    StudentTask,
 )
 from app.models.assessment import (
     Question,
@@ -56,6 +57,7 @@ __all__ = [
     "ClassSection",
     "StudentEnrollment",
     "TeacherAssignment",
+    "StudentTask",
     "Question",
     "LearningResource",
     "StudentMastery",
@@ -73,3 +75,4 @@ __all__ = [
     "ImpactSnapshot",
     "AuditLog",
 ]
+from app.models.lesson import ConceptLesson, LessonTranslation, GenerationLog  # noqa: E402,F401

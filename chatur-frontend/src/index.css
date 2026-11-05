@@ -4,6 +4,7 @@
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    color: #000000;
   }
 
   html[lang="te"] {
@@ -15,86 +16,110 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    background-color: #fefae0;
+    color: #000000;
+    -webkit-font-smoothing: antialiased;
   }
 
   * {
-    @apply border-slate-200;
+    border-color: #ccd5ae;
   }
 }
 
 @layer components {
+  /* Buttons: always black text, Warm Clay / Sand / Light Pistachio backgrounds */
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-800 text-white font-medium text-sm hover:bg-primary-700 active:bg-primary-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#d4a373] text-[#000000] font-semibold text-sm border border-[#ccd5ae] hover:bg-[#c49262] active:bg-[#b48151] transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm hover:bg-slate-50 active:bg-slate-100 transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-[#ccd5ae] bg-[#faedcd] text-[#000000] font-medium text-sm hover:bg-[#e9edc9] active:bg-[#ccd5ae] transition-all disabled:opacity-50 cursor-pointer;
   }
 
   .btn-accent {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-600 text-white font-medium text-sm hover:bg-accent-700 active:bg-accent-800 transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#e9edc9] text-[#000000] font-medium text-sm border border-[#ccd5ae] hover:bg-[#ccd5ae] transition-colors disabled:opacity-50 cursor-pointer;
   }
 
   .btn-danger {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white font-medium text-sm hover:bg-red-700 transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#faedcd] text-[#000000] font-medium text-sm border border-red-400 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer;
   }
 
+  /* Structural Cards */
   .card {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm;
+    @apply bg-white border border-[#ccd5ae] rounded-lg shadow-xs text-[#000000];
   }
 
   .card-header {
-    @apply px-6 py-4 border-b border-slate-200;
+    @apply px-5 py-3 border-b border-[#ccd5ae] bg-[#faedcd]/40 text-[#000000] font-semibold;
   }
 
   .card-body {
-    @apply px-6 py-5;
+    @apply px-5 py-4 text-[#000000];
   }
 
+  /* Form Inputs */
   .input-field {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition;
+    @apply w-full rounded-lg border border-[#ccd5ae] bg-white px-3.5 py-2 text-sm text-[#000000] placeholder-[#666666] focus:outline-none focus:ring-2 focus:ring-[#d4a373] focus:border-[#d4a373] transition-all;
   }
 
   .label {
-    @apply block text-sm font-medium text-slate-700 mb-1;
+    @apply block text-sm font-semibold text-[#000000] mb-1.5;
   }
 
+  /* Subtle Badges */
   .badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium text-[#000000] border border-[#ccd5ae];
+  }
+
+  .badge-sage {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#ccd5ae]/40 text-[#000000] border border-[#ccd5ae];
+  }
+
+  .badge-pistachio {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#e9edc9] text-[#000000] border border-[#ccd5ae];
+  }
+
+  .badge-sand {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#faedcd] text-[#000000] border border-[#ccd5ae];
+  }
+
+  .badge-clay {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4a373]/30 text-[#000000] border border-[#d4a373];
+  }
+
+  .badge-gold {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4a373]/30 text-[#000000] border border-[#d4a373];
+  }
+
+  .badge-navy {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#faedcd] text-[#000000] border border-[#ccd5ae];
   }
 
   .badge-blue {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#e9edc9] text-[#000000] border border-[#ccd5ae];
   }
 
   .badge-green {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#ccd5ae]/40 text-[#000000] border border-[#ccd5ae];
   }
 
   .badge-amber {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4a373]/30 text-[#000000] border border-[#d4a373];
   }
 
   .badge-red {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-[#000000] border border-red-300;
   }
 
   .badge-slate {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#faedcd] text-[#000000] border border-[#ccd5ae];
   }
 
   .mastery-bar {
-    @apply w-full bg-slate-200 rounded-full h-2 overflow-hidden;
+    @apply w-full bg-[#e9edc9] rounded-full h-2 overflow-hidden border border-[#ccd5ae];
   }
 
   .mastery-fill {
-    @apply h-2 rounded-full transition-all duration-500;
+    @apply h-full bg-[#d4a373] transition-all duration-300;
   }
 }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { @apply bg-slate-100; }
-::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
-::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }

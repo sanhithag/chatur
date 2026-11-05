@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import api from '@/lib/api'
-import { BookOpen, Eye, EyeOff } from 'lucide-react'
+import { BookOpen, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useI18n } from '@/i18n/I18nProvider'
 import type { Lang } from '@/i18n/translations'
 import { formatLang } from '@/i18n/translations'
 
 type Role = 'student' | 'teacher' | 'parent' | 'admin'
+type AuthMode = 'login' | 'register' | 'forgot' | 'reset'
 
 const ROLE_ROUTES: Record<string, string> = {
   student: '/student',
@@ -23,159 +24,403 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
 
+  const [mode, setMode] = useState<AuthMode>('login')
   const [role, setRole] = useState<Role>('student')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [grade, setGrade] = useState<number>(10)
+  const [section, setSection] = useState('A')
+  const [linkedStudent, setLinkedStudent] = useState('')
+  const [newPassword, setNewPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
+  // Login mutation
   const loginMutation = useMutation({
     mutationFn: async () => {
-      const { data } = await api.post('/auth/login', { username, password })
+      setErrorMsg(null)
+      const { data } = await api.post('/auth/login', { username: username.trim(), password })
       return data
     },
     onSuccess: (data) => {
       setAuth(data.user, data.access_token, data.refresh_token)
       navigate(ROLE_ROUTES[data.user.role] ?? '/login')
     },
+    onError: (err: any) => {
+      setErrorMsg(err?.response?.data?.detail || 'Invalid username or password. Please try again.')
+    },
   })
 
-  const roles: { value: Role; label: string }[] = [
-    { value: 'student', label: t('role_student') },
-    { value: 'teacher', label: t('role_teacher') },
-    { value: 'parent', label: t('role_parent') },
-    { value: 'admin', label: t('role_admin') },
-  ]
+  // Register mutation
+  const registerMutation = useMutation({
+    mutationFn: async () => {
+      setErrorMsg(null)
+      const payload: Record<string, unknown> = {
+        username: username.trim(),
+        password,
+        name: name.trim() || username.trim(),
+        email: email.trim() || undefined,
+        role,
+        preferred_lang: lang,
+      }
+      if (role === 'student') {
+        payload.grade = Number(grade)
+        payload.section = section.trim().toUpperCase() || 'A'
+      } else if (role === 'parent' && linkedStudent.trim()) {
+        payload.linked_student_username = linkedStudent.trim()
+      }
+      const { data } = await api.post('/auth/register', payload)
+      return data
+    },
+    onSuccess: (data) => {
+      setAuth(data.user, data.access_token, data.refresh_token)
+      navigate(ROLE_ROUTES[data.user.role] ?? '/login')
+    },
+    onError: (err: any) => {
+      setErrorMsg(err?.response?.data?.detail || 'Registration failed. Please check your inputs.')
+    },
+  })
+
+  // Forgot password mutation
+  const forgotMutation = useMutation({
+    mutationFn: async () => {
+      setErrorMsg(null)
+      setMessage(null)
+      const { data } = await api.post('/auth/forgot-password', {
+        username_or_email: username.trim() || email.trim(),
+      })
+      return data
+    },
+    onSuccess: (data) => {
+      setMessage(data.message)
+      setMode('reset')
+    },
+    onError: (err: any) => {
+      setErrorMsg(err?.response?.data?.detail || 'Account not found.')
+    },
+  })
+
+  // Reset password mutation
+  const resetMutation = useMutation({
+    mutationFn: async () => {
+      setErrorMsg(null)
+      setMessage(null)
+      const { data } = await api.post('/auth/reset-password', {
+        username: username.trim(),
+        new_password: newPassword,
+      })
+      return data
+    },
+    onSuccess: (data) => {
+      setMessage(data.message)
+      setMode('login')
+      setPassword('')
+    },
+    onError: (err: any) => {
+      setErrorMsg(err?.response?.data?.detail || 'Failed to reset password.')
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (mode === 'login') {
+      loginMutation.mutate()
+    } else if (mode === 'register') {
+      registerMutation.mutate()
+    } else if (mode === 'forgot') {
+      forgotMutation.mutate()
+    } else if (mode === 'reset') {
+      resetMutation.mutate()
+    }
+  }
 
   const LANGS: Lang[] = ['en', 'te', 'hi']
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-accent-700 flex items-center justify-center p-4">
-      {/* Language switcher */}
-      <div className="absolute top-4 right-4 flex gap-2">
-        {LANGS.map((l) => (
-          <button
-            key={l}
-            onClick={() => setLang(l)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              lang === l
-                ? 'bg-white text-primary-800'
-                : 'bg-white/20 text-white hover:bg-white/30'
-            }`}
-          >
-            {formatLang(l)}
-          </button>
-        ))}
+    <div className="min-h-screen bg-[#fefae0] flex flex-col justify-center items-center p-4 text-[#000000]">
+      {/* Top Language Bar */}
+      <div className="w-full max-w-md flex justify-between items-center mb-6 px-1">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded bg-[#ccd5ae] border border-[#ccd5ae] flex items-center justify-center">
+            <BookOpen className="w-4 h-4 text-[#000000]" />
+          </div>
+          <span className="font-bold tracking-tight text-lg text-[#000000]">CHATUR</span>
+        </div>
+
+        <div className="flex items-center bg-white border border-[#ccd5ae] rounded-lg p-0.5 text-xs text-[#000000]">
+          {LANGS.map((l) => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              className={`px-2.5 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
+                lang === l
+                  ? 'bg-[#ccd5ae] text-[#000000] font-bold shadow-2xs'
+                  : 'text-[#333333] hover:bg-[#e9edc9]'
+              }`}
+            >
+              {formatLang(l)}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4">
-            <BookOpen className="w-8 h-8 text-white" />
+      {/* Main Auth Card */}
+      <div className="w-full max-w-md bg-white border border-[#ccd5ae] rounded-lg shadow-sm overflow-hidden text-[#000000]">
+        {/* Card Header */}
+        <div className="p-5 border-b border-[#ccd5ae] bg-[#faedcd]/40">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-lg font-bold text-[#000000]">
+              {mode === 'login' && 'Sign In to Your Account'}
+              {mode === 'register' && 'Create New Account'}
+              {mode === 'forgot' && 'Reset Your Password'}
+              {mode === 'reset' && 'Set New Password'}
+            </h1>
+            <span className="text-xs text-[#333333] font-medium">CBSE / NCERT</span>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">{t('app_name')}</h1>
-          <p className="mt-2 text-primary-200 text-sm leading-relaxed max-w-xs mx-auto">
-            {t('app_tagline')}
+          <p className="text-xs text-[#333333]">
+            {mode === 'login' && 'Enter your credentials to continue your curriculum study.'}
+            {mode === 'register' && 'Select your role and start your personalized learning journey.'}
+            {mode === 'forgot' && 'Enter your registered username or email address.'}
+            {mode === 'reset' && 'Enter your username and new password.'}
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-lg font-semibold text-slate-900 mb-6">{t('sign_in')}</h2>
-
-          {/* Role tabs */}
-          <div className="grid grid-cols-2 gap-2 mb-6">
-            {roles.map((r) => (
-              <button
-                key={r.value}
-                onClick={() => setRole(r.value)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  role === r.value
-                    ? 'bg-primary-800 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
+        {/* Role Selector Tabs (Only on Login & Register) */}
+        {(mode === 'login' || mode === 'register') && (
+          <div className="px-5 pt-4">
+            <label className="block text-xs font-semibold text-[#000000] mb-1.5">
+              Select Account Role
+            </label>
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-[#fefae0] border border-[#ccd5ae] rounded-lg text-xs">
+              {(['student', 'teacher', 'parent', 'admin'] as Role[]).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRole(r)}
+                  className={`py-1.5 rounded-md font-semibold transition-all capitalize cursor-pointer text-center ${
+                    role === r
+                      ? 'bg-[#ccd5ae] text-[#000000] shadow-2xs border border-[#ccd5ae]'
+                      : 'text-[#333333] hover:bg-[#e9edc9]'
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
           </div>
+        )}
 
-          {/* Form */}
-          <form
-            onSubmit={(e) => { e.preventDefault(); loginMutation.mutate() }}
-            className="space-y-4"
-          >
+        {/* Error / Success Messages */}
+        <div className="px-5 pt-3">
+          {errorMsg && (
+            <div className="p-2.5 rounded-md bg-red-50 border border-red-300 text-xs text-red-900 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+          {message && (
+            <div className="p-2.5 rounded-md bg-emerald-50 border border-emerald-300 text-xs text-emerald-900 flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+              <span>{message}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
+          {mode === 'register' && (
             <div>
-              <label className="label">{t('username')}</label>
+              <label className="label">Full Name</label>
               <input
-                className="input-field"
                 type="text"
-                autoComplete="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Aarav Patel"
+                className="input-field"
               />
             </div>
+          )}
 
+          <div>
+            <label className="label">Username</label>
+            <input
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="e.g. student1 or your unique username"
+              className="input-field"
+            />
+          </div>
+
+          {(mode === 'register' || mode === 'forgot') && (
             <div>
-              <label className="label">{t('password')}</label>
+              <label className="label">Email Address (Optional)</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="e.g. user@example.com"
+                className="input-field"
+              />
+            </div>
+          )}
+
+          {/* Student Specific Fields */}
+          {mode === 'register' && role === 'student' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Class / Grade</label>
+                <select
+                  value={grade}
+                  onChange={(e) => setGrade(Number(e.target.value))}
+                  className="input-field"
+                >
+                  <option value={6}>Class 6</option>
+                  <option value={7}>Class 7</option>
+                  <option value={8}>Class 8</option>
+                  <option value={9}>Class 9</option>
+                  <option value={10}>Class 10</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Section</label>
+                <input
+                  type="text"
+                  maxLength={2}
+                  value={section}
+                  onChange={(e) => setSection(e.target.value)}
+                  placeholder="A"
+                  className="input-field uppercase"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Parent Specific Field */}
+          {mode === 'register' && role === 'parent' && (
+            <div>
+              <label className="label">Child's Student Username</label>
+              <input
+                type="text"
+                value={linkedStudent}
+                onChange={(e) => setLinkedStudent(e.target.value)}
+                placeholder="Username of your student (e.g. student1)"
+                className="input-field"
+              />
+              <p className="text-[11px] text-[#666666] mt-1">
+                Parent accounts view progress for verified linked students.
+              </p>
+            </div>
+          )}
+
+          {/* Password field for Login & Register */}
+          {(mode === 'login' || mode === 'register') && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-[#000000]">Password</label>
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => { setMode('forgot'); setErrorMsg(null); setMessage(null); }}
+                    className="text-xs text-[#333333] hover:text-[#000000] underline cursor-pointer"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <input
-                  className="input-field pr-10"
                   type={showPw ? 'text' : 'password'}
-                  autoComplete="current-password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  placeholder="••••••••"
+                  className="input-field pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666666] hover:text-[#000000] cursor-pointer"
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
+          )}
 
-            {loginMutation.isError && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                {t('login_error')}
-              </p>
-            )}
+          {/* New Password for Reset Mode */}
+          {mode === 'reset' && (
+            <div>
+              <label className="label">New Password</label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters"
+                className="input-field"
+              />
+            </div>
+          )}
 
+          {/* Action Button */}
+          <div className="pt-2">
             <button
               type="submit"
-              disabled={loginMutation.isPending}
-              className="btn-primary w-full justify-center py-2.5"
+              disabled={loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending || resetMutation.isPending}
+              className="w-full btn-primary py-2.5 text-sm"
             >
-              {loginMutation.isPending ? t('signing_in') : t('sign_in')}
+              {loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending || resetMutation.isPending
+                ? 'Processing…'
+                : mode === 'login'
+                ? 'Sign In'
+                : mode === 'register'
+                ? 'Create Account'
+                : mode === 'forgot'
+                ? 'Verify Account'
+                : 'Save New Password'}
+              <ArrowRight className="w-4 h-4" />
             </button>
-          </form>
-
-          {/* Demo credentials hint */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">Demo Accounts</p>
-            <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
-              <div className="bg-slate-50 rounded-lg p-2">
-                <div className="font-medium">Student</div>
-                <div className="text-slate-500">student1 / Student@2024</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg p-2">
-                <div className="font-medium">Teacher</div>
-                <div className="text-slate-500">teacher1 / Teacher@2024</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg p-2">
-                <div className="font-medium">Parent</div>
-                <div className="text-slate-500">parent1 / Parent@2024</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg p-2">
-                <div className="font-medium">Admin</div>
-                <div className="text-slate-500">admin / Admin@School2024</div>
-              </div>
-            </div>
           </div>
+        </form>
+
+        {/* Mode Toggle Footer */}
+        <div className="p-4 border-t border-[#ccd5ae] bg-[#faedcd]/20 text-center text-xs text-[#333333]">
+          {mode === 'login' ? (
+            <p>
+              Don't have an account?{' '}
+              <button
+                type="button"
+                onClick={() => { setMode('register'); setErrorMsg(null); setMessage(null); }}
+                className="font-bold text-[#000000] underline hover:text-[#d4a373] cursor-pointer ml-1"
+              >
+                Register Now
+              </button>
+            </p>
+          ) : (
+            <p>
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setErrorMsg(null); setMessage(null); }}
+                className="font-bold text-[#000000] underline hover:text-[#d4a373] cursor-pointer ml-1"
+              >
+                Sign In
+              </button>
+            </p>
+          )}
         </div>
+      </div>
+
+      {/* Footer Branding */}
+      <div className="mt-6 text-center text-xs text-[#666666]">
+        CHATUR — CBSE / NCERT Educational Platform &copy; 2026
       </div>
     </div>
   )

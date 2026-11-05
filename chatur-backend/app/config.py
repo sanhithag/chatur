@@ -16,6 +16,14 @@ class Settings(BaseSettings):
     first_superadmin_email: str = "admin@chatur.school"
     first_superadmin_password: str = "Admin@CHATUR2024"
     first_school_name: str = "CHATUR Demo School"
+    # AI content provider (backend only). ai_provider: gemini | anthropic | none
+    ai_provider: str = "none"
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-3.5-flash-lite"
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-sonnet-4-5"
+    ai_timeout_seconds: float = 60.0
+    reference_dir: str = ""  # local dir holding NCERT chapter PDFs (never bundled)
     cors_origins: Union[List[str], str] = ["http://localhost:5173", "http://localhost:3000"]
 
     @field_validator("cors_origins", mode="before")

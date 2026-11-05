@@ -19,7 +19,6 @@ export default function AdminLayout() {
   return (
     <AppShell
       roleLabel={t('role_admin')}
-      accentClass="bg-violet-800"
       navItems={navItems}
     />
   )

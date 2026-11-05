@@ -6,6 +6,7 @@ import PageHeader from '@/components/PageHeader'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorMessage from '@/components/ErrorMessage'
 import api from '@/lib/api'
+import AdminContentPanel from '@/components/AdminContentPanel'
 
 interface ConceptNode {
   id: string
@@ -89,6 +90,7 @@ export default function AdminCurriculum() {
           title={t('nav_curriculum')}
           subtitle="CBSE Class 6–10 concept taxonomy & prerequisite dependency graph"
         />
+        <AdminContentPanel />
 
         {/* View Toggle Tabs */}
         <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 self-start sm:self-auto">

@@ -183,3 +183,140 @@ async def get_curriculum_graph(
     ]
 
     return {"nodes": nodes, "edges": edges}
+
+
+@router.get("/subjects/{subject_id}/navigator")
+async def subject_navigator(
+    subject_id: str,
+    grade: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+):
+    """Grades available + chapters with concept lists for one subject (single query; not the whole curriculum)."""
+    from app.models import CurriculumTopic
+    from app.models.lesson import ConceptLesson
+    grades = [g for (g,) in (await db.execute(select(CurriculumUnit.grade).where(CurriculumUnit.subject_id == subject_id).distinct().order_by(CurriculumUnit.grade))).all()]
+    if grade is None and grades:
+        grade = grades[0]
+    rows = (await db.execute(
+        select(CurriculumUnit.name_en, CurriculumChapter.id, CurriculumChapter.chapter_no, CurriculumChapter.name_en, CurriculumChapter.name_te,
+               CurriculumChapter.name_hi, Concept.id, Concept.name_en, Concept.name_te, Concept.name_hi)
+        .select_from(CurriculumChapter).join(CurriculumUnit, CurriculumChapter.unit_id == CurriculumUnit.id)
+        .join(CurriculumTopic, CurriculumTopic.chapter_id == CurriculumChapter.id).join(Concept, Concept.topic_id == CurriculumTopic.id)
+        .where(CurriculumUnit.subject_id == subject_id, CurriculumUnit.grade == grade, Concept.is_active.is_(True))
+        .order_by(CurriculumChapter.chapter_no, Concept.sort_order))).all()
+    ready = {cid for (cid,) in (await db.execute(select(ConceptLesson.concept_id).where(ConceptLesson.status == "approved"))).all()}
+    chapters: dict = {}
+    for unit, chid, no, en, te, hi, cid, cen, cte, chi in rows:
+        ch = chapters.setdefault(chid, {"id": chid, "chapter_no": no, "unit": unit, "name_en": en, "name_te": te, "name_hi": hi, "concepts": []})
+        ch["concepts"].append({"id": cid, "name_en": cen, "name_te": cte, "name_hi": chi, "lesson_ready": cid in ready})
+    return {"grades": grades, "grade": grade, "chapters": list(chapters.values())}
+
+
+@router.get("/tree")
+async def curriculum_tree(
+    grade: Optional[int] = Query(None, description="Optional filter by grade"),
+    subject_id: Optional[str] = Query(None, description="Optional filter by subject"),
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+):
+    """Full curriculum hierarchy for GeeksforGeeks-style browsing: Board -> Grade -> Subject -> Unit -> Chapter -> Topic -> Concept."""
+    from app.models.curriculum import CurriculumSubject, CurriculumUnit, CurriculumChapter, CurriculumTopic, Concept
+
+    subj_q = select(CurriculumSubject).where(CurriculumSubject.is_active.is_(True)).order_by(CurriculumSubject.sort_order)
+    if subject_id:
+        subj_q = subj_q.where(CurriculumSubject.id == subject_id)
+    subjects = (await db.execute(subj_q)).scalars().all()
+
+    unit_q = select(CurriculumUnit)
+    if grade is not None:
+        unit_q = unit_q.where(CurriculumUnit.grade == grade)
+    if subject_id is not None:
+        unit_q = unit_q.where(CurriculumUnit.subject_id == subject_id)
+    unit_q = unit_q.order_by(CurriculumUnit.grade, CurriculumUnit.unit_no)
+    units = (await db.execute(unit_q)).scalars().all()
+    unit_ids = [u.id for u in units]
+
+    chapters = []
+    topics = []
+    concepts = []
+    if unit_ids:
+        chap_q = select(CurriculumChapter).where(CurriculumChapter.unit_id.in_(unit_ids)).order_by(CurriculumChapter.chapter_no)
+        chapters = (await db.execute(chap_q)).scalars().all()
+        chap_ids = [ch.id for ch in chapters]
+        if chap_ids:
+            top_q = select(CurriculumTopic).where(CurriculumTopic.chapter_id.in_(chap_ids)).order_by(CurriculumTopic.topic_no)
+            topics = (await db.execute(top_q)).scalars().all()
+            top_ids = [t.id for t in topics]
+            if top_ids:
+                conc_q = select(Concept).where(Concept.topic_id.in_(top_ids), Concept.is_active.is_(True)).order_by(Concept.sort_order)
+                concepts = (await db.execute(conc_q)).scalars().all()
+
+    # Map topics to concepts
+    concepts_by_topic: dict = {}
+    for c in concepts:
+        concepts_by_topic.setdefault(c.topic_id, []).append({
+            "id": c.id,
+            "code": c.code,
+            "name_en": c.name_en,
+            "name_te": c.name_te,
+            "name_hi": c.name_hi,
+            "grade": c.grade,
+            "difficulty": c.difficulty_band,
+            "objectives": c.learning_objectives or [],
+        })
+
+    # Map chapters to topics
+    topics_by_chap: dict = {}
+    for t in topics:
+        topics_by_chap.setdefault(t.chapter_id, []).append({
+            "id": t.id,
+            "topic_no": t.topic_no,
+            "name_en": t.name_en,
+            "name_te": t.name_te,
+            "name_hi": t.name_hi,
+            "concepts": concepts_by_topic.get(t.id, []),
+        })
+
+    # Map units to chapters
+    chaps_by_unit: dict = {}
+    for ch in chapters:
+        chaps_by_unit.setdefault(ch.unit_id, []).append({
+            "id": ch.id,
+            "chapter_no": ch.chapter_no,
+            "name_en": ch.name_en,
+            "name_te": ch.name_te,
+            "name_hi": ch.name_hi,
+            "topics": topics_by_chap.get(ch.id, []),
+        })
+
+    # Build subjects tree with grades and units
+    tree = []
+    for s in subjects:
+        subj_units = [u for u in units if u.subject_id == s.id]
+        if not subj_units:
+            continue
+        grades_map: dict = {}
+        for u in subj_units:
+            grades_map.setdefault(u.grade, []).append({
+                "id": u.id,
+                "unit_no": u.unit_no,
+                "name_en": u.name_en,
+                "name_te": u.name_te,
+                "name_hi": u.name_hi,
+                "chapters": chaps_by_unit.get(u.id, []),
+            })
+        tree.append({
+            "id": s.id,
+            "code": s.code,
+            "name_en": s.name_en,
+            "name_te": s.name_te,
+            "name_hi": s.name_hi,
+            "domain": s.domain,
+            "grades": [
+                {"grade": g, "units": ulist}
+                for g, ulist in sorted(grades_map.items())
+            ],
+        })
+
+    return {"tree": tree}

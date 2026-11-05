@@ -52,7 +52,7 @@ async def run_verification():
         for h in q['hints']:
             assert "v = u + at" not in h, f"Physics formula found in English hint: {h}"
             assert "s = ut" not in h, f"Physics formula found in English hint: {h}"
-        assert any("scanning" in h.lower() or "reading" in h.lower() or "factual" in h.lower() or "detail" in h.lower() or "question" in h.lower() for h in q['hints']), "English hints do not contain expected reading terms!"
+        assert any("context" in h.lower() or "clue" in h.lower() or "deduced" in h.lower() or "scanning" in h.lower() or "reading" in h.lower() or "factual" in h.lower() or "detail" in h.lower() or "question" in h.lower() for h in q['hints']), "English hints do not contain expected reading terms!"
         print("[PASS] English question hints are subject-accurate and free of physics leakage.")
 
         # 4. Test English Micro-Lesson

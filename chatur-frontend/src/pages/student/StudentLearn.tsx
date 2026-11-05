@@ -1,10 +1,28 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { BookOpen, Lightbulb, Eye, Compass, HelpCircle, CheckCircle, Volume2, ArrowRight, GitFork } from 'lucide-react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import {
+  BookOpen,
+  Lightbulb,
+  Eye,
+  Compass,
+  HelpCircle,
+  CheckCircle,
+  Volume2,
+  VolumeX,
+  ArrowRight,
+  ArrowLeft,
+  Target,
+  ChevronRight,
+  ChevronDown,
+  Check,
+  AlertCircle,
+  Plus,
+  CheckSquare,
+} from 'lucide-react'
 import api from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
 import { useI18n } from '@/i18n/I18nProvider'
-import PageHeader from '@/components/PageHeader'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorMessage from '@/components/ErrorMessage'
 
@@ -15,6 +33,7 @@ interface LessonContent {
   concept_name: string
   grade: number
   subject_name: string
+  subject_id?: string
   working_level_name?: string
   is_foundation_path: boolean
   key_terms: string[]
@@ -25,68 +44,166 @@ interface LessonContent {
     correct_index: number
     explanation: string
   }
+  lesson_source?: 'stored' | 'legacy' | 'pending'
+  language_served?: string
+  translation_fallback?: boolean
+  extra?: {
+    introduction?: string
+    objectives?: string[]
+    summary?: string
+    definitions?: { term: string; meaning: string }[]
+    formulas?: { name: string; formula: string; description: string }[]
+    misconceptions?: { wrong: string; correct: string }[]
+  } | null
+  prerequisites?: Array<{
+    id: string
+    code: string
+    name: string
+    grade: number
+    is_strict: boolean
+  }>
+  related_concepts?: Array<{
+    id: string
+    name: string
+    difficulty: string
+    grade: number
+  }>
 }
 
-export default function StudentLearnPage() {
+interface CurriculumSubjectItem {
+  id: string
+  code: string
+  name_en: string
+  name_te?: string
+  name_hi?: string
+  domain: string
+}
+
+interface CurriculumNavigator {
+  grades: number[]
+  grade: number
+  chapters: Array<{
+    id: string
+    chapter_no: number
+    unit: string
+    name_en: string
+    name_te?: string
+    name_hi?: string
+    concepts: Array<{
+      id: string
+      name_en: string
+      name_te?: string
+      name_hi?: string
+      lesson_ready: boolean
+    }>
+  }>
+}
+
+export default function StudentLearn() {
   const { t, lang } = useI18n()
+  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [selectedStyle, setSelectedStyle] = useState<ExplanationStyle>('simple')
+  const [speechActive, setSpeechActive] = useState(false)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
   const [hasAnswered, setHasAnswered] = useState(false)
-  const [speechActive, setSpeechActive] = useState(false)
+  const [openChapters, setOpenChapters] = useState<Record<string, boolean>>({})
+  const [activeGrade, setActiveGrade] = useState<number>(10)
+  const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null)
+  const [activeConceptId, setActiveConceptId] = useState<string | null>(null)
+  const [taskAdded, setTaskAdded] = useState(false)
 
-  const searchParams = new URLSearchParams(window.location.search)
-  const conceptIdFromUrl = searchParams.get('concept_id')
-
-  // Fetch student active learning concept
-  const { data: lesson, isLoading, isError, refetch } = useQuery<LessonContent>({
-    queryKey: ['student-active-lesson', user?.id, lang, conceptIdFromUrl],
+  // Fetch available subjects
+  const { data: subjects } = useQuery<CurriculumSubjectItem[]>({
+    queryKey: ['curriculum-subjects'],
     queryFn: async () => {
-      const url = conceptIdFromUrl
-        ? `/students/${user?.id}/learn/active?lang=${lang}&concept_id=${conceptIdFromUrl}`
-        : `/students/${user?.id}/learn/active?lang=${lang}`
-      const res = await api.get(url)
+      const res = await api.get('/curriculum/subjects')
+      return res.data
+    },
+  })
+
+  // Initialize active subject
+  useEffect(() => {
+    const urlSubj = searchParams.get('subject_id')
+    const storedSubj = localStorage.getItem('chatur_subject')
+    if (urlSubj) {
+      setActiveSubjectId(urlSubj)
+    } else if (storedSubj) {
+      setActiveSubjectId(storedSubj)
+    } else if (subjects && subjects.length > 0) {
+      setActiveSubjectId(subjects[0].id)
+    }
+  }, [subjects, searchParams])
+
+  // Initialize active concept
+  useEffect(() => {
+    const urlConcept = searchParams.get('concept_id')
+    if (urlConcept) {
+      setActiveConceptId(urlConcept)
+    }
+  }, [searchParams])
+
+  // Fetch subject-specific chapter navigator
+  const { data: navigatorData } = useQuery<CurriculumNavigator>({
+    queryKey: ['curriculum-navigator', activeSubjectId, activeGrade],
+    queryFn: async () => {
+      if (!activeSubjectId) return null
+      const res = await api.get(`/curriculum/subjects/${activeSubjectId}/navigator`, {
+        params: { grade: activeGrade },
+      })
+      return res.data
+    },
+    enabled: !!activeSubjectId,
+  })
+
+  // Expand chapter when concept is active
+  useEffect(() => {
+    if (navigatorData?.chapters) {
+      const initialOpen: Record<string, boolean> = {}
+      navigatorData.chapters.forEach((ch, idx) => {
+        const containsActive = ch.concepts.some((c) => c.id === activeConceptId)
+        initialOpen[ch.id] = containsActive || idx === 0
+      })
+      setOpenChapters(initialOpen)
+    }
+  }, [navigatorData, activeConceptId])
+
+  // Fetch active lesson content
+  const { data: lesson, isLoading, isError, refetch } = useQuery<LessonContent>({
+    queryKey: ['student-learn-active', user?.id, activeConceptId, activeSubjectId, lang],
+    queryFn: async () => {
+      const params: Record<string, string> = { lang }
+      if (activeConceptId) params.concept_id = activeConceptId
+      if (activeSubjectId) params.subject_id = activeSubjectId
+
+      const res = await api.get(`/students/${user?.id}/learn/active`, { params })
+      if (res.data?.concept_id) {
+        localStorage.setItem(
+          'chatur_last_concept',
+          JSON.stringify({ id: res.data.concept_id, name: res.data.concept_name })
+        )
+      }
       return res.data
     },
     enabled: !!user?.id,
   })
 
-  // Fetch prerequisite DAG chain for this concept
-  const { data: chainData } = useQuery<{
-    target_concept_id: string
-    target_concept_name: string
-    chain: Array<{
-      id: string
-      code: string
-      name_en: string
-      grade: number
-      p_know: number
-      level_name: string
-      is_mastered: boolean
-    }>
-  }>({
-    queryKey: ['student-concept-chain', user?.id, lesson?.concept_id],
-    queryFn: async () => {
-      const res = await api.get(`/students/${user?.id}/concepts/${lesson?.concept_id}/chain`)
-      return res.data
-    },
-    enabled: !!user?.id && !!lesson?.concept_id,
-  })
-
   const styleIcons: Record<ExplanationStyle, React.ReactNode> = {
-    simple: <BookOpen className="w-4 h-4" />,
-    detailed: <Compass className="w-4 h-4" />,
-    visual: <Eye className="w-4 h-4" />,
-    analogy: <Lightbulb className="w-4 h-4" />,
-    worked_example: <HelpCircle className="w-4 h-4" />,
+    simple: <BookOpen className="w-4 h-4 text-[#000000]" />,
+    detailed: <Compass className="w-4 h-4 text-[#000000]" />,
+    visual: <Eye className="w-4 h-4 text-[#000000]" />,
+    analogy: <Lightbulb className="w-4 h-4 text-[#000000]" />,
+    worked_example: <HelpCircle className="w-4 h-4 text-[#000000]" />,
   }
 
   const styleLabels: Record<ExplanationStyle, string> = {
-    simple: t('style_simple'),
-    detailed: t('style_detailed'),
-    visual: t('style_visual'),
-    analogy: t('style_analogy'),
-    worked_example: t('style_worked_example'),
+    simple: 'Simple',
+    detailed: 'Detailed',
+    visual: 'Visual Diagram',
+    analogy: 'Analogy',
+    worked_example: 'Worked Example',
   }
 
   const toggleSpeech = (text: string) => {
@@ -95,7 +212,7 @@ export default function StudentLearnPage() {
       window.speechSynthesis.cancel()
       setSpeechActive(false)
     } else {
-      const utterance = new SpeechSynthesisUtterance(text)
+      const utterance = new SpeechSynthesisUtterance(text.replace(/[#*`_]/g, ''))
       utterance.lang = lang === 'te' ? 'te-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN'
       utterance.onend = () => setSpeechActive(false)
       window.speechSynthesis.speak(utterance)
@@ -103,190 +220,406 @@ export default function StudentLearnPage() {
     }
   }
 
+  const selectConcept = (conceptId: string) => {
+    setActiveConceptId(conceptId)
+    setSearchParams({ concept_id: conceptId, ...(activeSubjectId ? { subject_id: activeSubjectId } : {}) })
+    setSelectedAnswer(null)
+    setHasAnswered(false)
+    setTaskAdded(false)
+  }
+
+  const selectSubject = (subjId: string) => {
+    setActiveSubjectId(subjId)
+    localStorage.setItem('chatur_subject', subjId)
+    setActiveConceptId(null)
+    setSearchParams({ subject_id: subjId })
+  }
+
+  const toggleChapterAccordion = (chId: string) => {
+    setOpenChapters((prev) => ({ ...prev, [chId]: !prev[chId] }))
+  }
+
+  const handleAddLessonToTodo = async () => {
+    if (!lesson || !user?.id) return
+    try {
+      await api.post(`/students/${user.id}/tasks`, {
+        title: `Study: ${lesson.concept_name}`,
+        task_type: 'lesson',
+        link_type: 'concept',
+        link_id: lesson.concept_id,
+      })
+      setTaskAdded(true)
+    } catch (err) {
+      console.error('Failed to add task to todo:', err)
+    }
+  }
+
+  const loc = (o: { name_en: string; name_te?: string; name_hi?: string }) =>
+    (lang === 'te' && o.name_te) || (lang === 'hi' && o.name_hi) || o.name_en
+
   if (isLoading) return <LoadingSpinner />
   if (isError || !lesson) return <ErrorMessage onRetry={refetch} />
 
   const currentExplanation = lesson.styles[selectedStyle] || lesson.styles.simple
 
+  // Collect all concepts across chapters for previous / next navigation
+  const allNavConcepts = navigatorData?.chapters?.flatMap((ch) => ch.concepts) ?? []
+  const currentIdx = allNavConcepts.findIndex((c) => c.id === lesson.concept_id)
+  const prevConcept = currentIdx > 0 ? allNavConcepts[currentIdx - 1] : null
+  const nextConcept = currentIdx >= 0 && currentIdx < allNavConcepts.length - 1 ? allNavConcepts[currentIdx + 1] : null
+
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <PageHeader
-        title={`${t('nav_learn')}: ${lesson.concept_name}`}
-        subtitle={`${lesson.subject_name} · ${t('grade_level')} ${lesson.grade}`}
-      />
-
-      {/* Foundation Path banner if student is repairing a prerequisite */}
-      {lesson.is_foundation_path && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-          <Compass className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <h4 className="text-sm font-semibold text-amber-900">{t('foundation_path_active')}</h4>
-            <p className="text-xs text-amber-700 mt-0.5">
-              {t('foundation_path_explainer')} ({lesson.working_level_name})
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Prerequisite Knowledge Graph Chain */}
-      {chainData && chainData.chain && chainData.chain.length > 1 && (
-        <div className="card p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
-            <span className="flex items-center gap-1.5">
-              <GitFork className="w-4 h-4 text-primary-600" />
-              Prerequisite Learning Pathway (Cross-Grade DAG)
-            </span>
-            <span className="text-slate-500 font-normal hidden sm:inline">
-              Traced to Class {chainData.chain[0].grade} foundational prerequisites
-            </span>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto py-2">
-            {chainData.chain.map((node, i) => (
-              <div key={node.id} className="flex items-center gap-2 shrink-0">
-                <a
-                  href={`/student/learn?concept_id=${node.id}`}
-                  className={`p-2.5 rounded-lg border text-xs flex flex-col gap-0.5 transition-all hover:shadow-sm ${
-                    node.id === lesson.concept_id
-                      ? 'bg-primary-50 border-primary-500 font-bold text-primary-950 ring-2 ring-primary-300'
-                      : node.is_mastered
-                      ? 'bg-green-50 border-green-200 text-green-900'
-                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                      Class {node.grade}
-                    </span>
-                    {node.is_mastered ? (
-                      <span className="text-[10px] text-green-700 font-semibold">Mastered</span>
-                    ) : (
-                      <span className="text-[10px] text-amber-700 font-semibold">{Math.round(node.p_know * 100)}%</span>
-                    )}
-                  </div>
-                  <span className="text-xs mt-0.5">{node.name_en}</span>
-                </a>
-                {i < chainData.chain.length - 1 && (
-                  <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-                )}
+    <div className="flex flex-col lg:flex-row h-full min-h-[calc(100vh-3.5rem)] text-[#000000]">
+      {/* GeeksforGeeks-Style Left Curriculum Sidebar */}
+      <aside className="w-full lg:w-72 bg-[#faedcd]/40 border-r border-[#ccd5ae] shrink-0 flex flex-col max-h-[calc(100vh-3.5rem)] overflow-y-auto text-[#000000]">
+        {/* Subject & Grade Selection */}
+        <div className="p-3 border-b border-[#ccd5ae] bg-white space-y-2.5">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-[#333333] flex items-center justify-between">
+            <span>Subject & Class</span>
+            {navigatorData?.grades && (
+              <div className="flex items-center gap-1">
+                {navigatorData.grades.map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setActiveGrade(g)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                      activeGrade === g
+                        ? 'bg-[#ccd5ae] text-[#000000] border border-[#ccd5ae]'
+                        : 'bg-white border border-[#ccd5ae] text-[#333333] hover:bg-[#e9edc9]'
+                    }`}
+                  >
+                    Cl {g}
+                  </button>
+                ))}
               </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-1">
+            {subjects?.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => selectSubject(s.id)}
+                className={`px-2 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                  activeSubjectId === s.id
+                    ? 'bg-[#ccd5ae] text-[#000000] border border-[#ccd5ae] shadow-2xs'
+                    : 'bg-white border border-[#ccd5ae] text-[#333333] hover:bg-[#e9edc9]'
+                }`}
+              >
+                {loc(s)}
+              </button>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Explanation Style Selector Tabs */}
-      <div className="card p-2 flex flex-wrap gap-2 bg-slate-50 border border-slate-200 rounded-xl">
-        {(['simple', 'detailed', 'visual', 'analogy', 'worked_example'] as ExplanationStyle[]).map((style) => (
-          <button
-            key={style}
-            onClick={() => setSelectedStyle(style)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
-              selectedStyle === style
-                ? 'bg-primary-800 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            {styleIcons[style]}
-            {styleLabels[style]}
-          </button>
-        ))}
-      </div>
-
-      {/* Main Micro-Lesson Card */}
-      <div className="card p-6 space-y-5 bg-white border border-slate-200 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between border-b pb-3">
-          <h2 className="text-lg font-bold text-slate-900">{currentExplanation.title}</h2>
-          <button
-            onClick={() => toggleSpeech(currentExplanation.content)}
-            className={`p-2 rounded-lg border text-xs flex items-center gap-1.5 transition ${
-              speechActive ? 'bg-primary-100 text-primary-800 border-primary-300' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-            }`}
-            title="Read aloud"
-          >
-            <Volume2 className="w-4 h-4" />
-            <span>{speechActive ? t('stop_audio') : t('listen')}</span>
-          </button>
-        </div>
-
-        {/* Lesson Body */}
-        <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed whitespace-pre-line text-sm sm:text-base">
-          {currentExplanation.content}
-        </div>
-
-        {/* Key Terminology Badges */}
-        {lesson.key_terms && lesson.key_terms.length > 0 && (
-          <div className="pt-4 border-t border-slate-100">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">
-              {t('key_terminology')}
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {lesson.key_terms.map((term, i) => (
-                <span key={i} className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs rounded-full font-medium">
-                  {term}
-                </span>
-              ))}
-            </div>
+        {/* Chapters & Topics Accordion Tree */}
+        <div className="flex-1 overflow-y-auto p-2 space-y-1 divide-y divide-[#ccd5ae]/40 text-xs">
+          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#333333]">
+            Curriculum Hierarchy
           </div>
-        )}
-      </div>
-
-      {/* Quick Comprehension Check */}
-      <div className="card p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-4">
-        <div className="flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-primary-600" />
-          <h3 className="font-semibold text-slate-900 text-base">{t('quick_check')}</h3>
-        </div>
-        <p className="text-sm text-slate-700 font-medium">{lesson.comprehension_check.question}</p>
-
-        <div className="space-y-2">
-          {lesson.comprehension_check.options.map((option, idx) => {
-            let btnStyle = 'bg-white border-slate-200 text-slate-800 hover:bg-slate-100'
-            if (hasAnswered) {
-              if (idx === lesson.comprehension_check.correct_index) {
-                btnStyle = 'bg-green-100 border-green-500 text-green-900 font-medium'
-              } else if (idx === selectedAnswer) {
-                btnStyle = 'bg-red-100 border-red-500 text-red-900'
-              } else {
-                btnStyle = 'opacity-50 border-slate-200'
-              }
-            }
+          {navigatorData?.chapters?.map((ch) => {
+            const isOpen = !!openChapters[ch.id]
+            const isChActive = ch.concepts.some((c) => c.id === lesson.concept_id)
 
             return (
-              <button
-                key={idx}
-                disabled={hasAnswered}
-                onClick={() => {
-                  setSelectedAnswer(idx)
-                  setHasAnswered(true)
-                }}
-                className={`w-full text-left p-3 rounded-lg border text-sm transition flex items-center justify-between ${btnStyle}`}
-              >
-                <span>{option}</span>
-                {hasAnswered && idx === lesson.comprehension_check.correct_index && (
-                  <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+              <div key={ch.id} className="pt-1">
+                <button
+                  onClick={() => toggleChapterAccordion(ch.id)}
+                  className={`w-full text-left px-2 py-1.5 rounded flex items-center justify-between text-xs font-semibold transition-colors cursor-pointer ${
+                    isChActive
+                      ? 'bg-[#e9edc9] text-[#000000] border border-[#ccd5ae]'
+                      : 'text-[#000000] hover:bg-[#e9edc9]/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate pr-2">
+                    <span className="w-4 h-4 rounded bg-[#faedcd] text-[#000000] font-bold text-[10px] flex items-center justify-center shrink-0 border border-[#ccd5ae]">
+                      {ch.chapter_no}
+                    </span>
+                    <span className="truncate">{loc(ch)}</span>
+                  </div>
+                  {isOpen ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-[#333333] shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-[#333333] shrink-0" />
+                  )}
+                </button>
+
+                {isOpen && (
+                  <div className="pl-5 pr-1 py-1 space-y-0.5 border-l border-[#ccd5ae] ml-3 mt-0.5">
+                    {ch.concepts.map((c) => {
+                      const isCurrent = c.id === lesson.concept_id
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => selectConcept(c.id)}
+                          className={`w-full text-left px-2 py-1 rounded text-xs flex items-center justify-between transition-all cursor-pointer ${
+                            isCurrent
+                              ? 'bg-[#ccd5ae] text-[#000000] font-bold shadow-2xs'
+                              : 'text-[#333333] hover:text-[#000000] hover:bg-[#e9edc9]/60'
+                          }`}
+                        >
+                          <span className="truncate">{loc(c)}</span>
+                          {isCurrent && <Check className="w-3.5 h-3.5 text-[#000000] shrink-0 ml-1" />}
+                        </button>
+                      )
+                    })}
+                  </div>
                 )}
-              </button>
+              </div>
             )
           })}
         </div>
 
-        {hasAnswered && (
-          <div className="p-3 bg-white rounded-lg border text-xs space-y-1">
-            <span className="font-bold text-slate-800">{t('explanation')}:</span>
-            <p className="text-slate-600">{lesson.comprehension_check.explanation}</p>
+        {/* Practice & To-do Quick Action Widget */}
+        <div className="p-3 border-t border-[#ccd5ae] bg-white space-y-2">
+          <button
+            onClick={() => navigate(`/student/practice?concept_id=${lesson.concept_id}`)}
+            className="w-full btn-primary text-xs py-1.5 flex items-center justify-center gap-1.5"
+          >
+            <Target className="w-3.5 h-3.5" />
+            Practise This Topic
+          </button>
+          <button
+            onClick={handleAddLessonToTodo}
+            disabled={taskAdded}
+            className="w-full btn-secondary text-xs py-1.5 flex items-center justify-center gap-1.5"
+          >
+            {taskAdded ? <CheckSquare className="w-3.5 h-3.5 text-emerald-800" /> : <Plus className="w-3.5 h-3.5" />}
+            {taskAdded ? 'Added to To-Do' : 'Add to To-Do List'}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Workspace (GeeksforGeeks Structured Reading Experience) */}
+      <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-5 bg-[#fefae0] text-[#000000]">
+        {/* Breadcrumb Hierarchy */}
+        <div className="flex items-center gap-1.5 text-xs text-[#333333] flex-wrap">
+          <span>CBSE</span>
+          <ChevronRight className="w-3 h-3 text-[#333333]" />
+          <span>Class {lesson.grade}</span>
+          <ChevronRight className="w-3 h-3 text-[#333333]" />
+          <span className="font-semibold text-[#000000]">{lesson.subject_name}</span>
+          <ChevronRight className="w-3 h-3 text-[#333333]" />
+          <span className="font-bold text-[#000000] truncate">
+            {lesson.concept_name}
+          </span>
+        </div>
+
+        {/* Top Concept Banner: Sand background with Sage border */}
+        <div className="bg-[#faedcd] border border-[#ccd5ae] rounded-lg p-5 text-[#000000] shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#e9edc9] text-[#000000] border border-[#ccd5ae]">
+                  Class {lesson.grade} &bull; {lesson.subject_name}
+                </span>
+                {lesson.translation_fallback && (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-white text-[#333333] border border-[#ccd5ae]">
+                    English Original
+                  </span>
+                )}
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-[#000000] tracking-tight">
+                {lesson.concept_name}
+              </h1>
+              {lesson.extra?.introduction && (
+                <p className="text-xs sm:text-sm text-[#333333] max-w-3xl leading-relaxed">
+                  {lesson.extra.introduction}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => toggleSpeech(currentExplanation.content)}
+                className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+                title="Audio voice explanation"
+              >
+                {speechActive ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                <span>{speechActive ? 'Stop' : 'Listen'}</span>
+              </button>
+
+              <button
+                onClick={() => navigate(`/student/practice?concept_id=${lesson.concept_id}`)}
+                className="btn-primary text-xs py-1.5 px-3.5"
+              >
+                <Target className="w-3.5 h-3.5" />
+                Practise
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Learning Objectives */}
+        {lesson.extra?.objectives && lesson.extra.objectives.length > 0 && (
+          <div className="card p-4 bg-white border border-[#ccd5ae]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#333333] mb-2">
+              Learning Objectives
+            </h3>
+            <ul className="space-y-1 text-xs text-[#000000]">
+              {lesson.extra.objectives.map((obj, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-[#d4a373] font-bold">&bull;</span>
+                  <span>{obj}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
-      </div>
 
-      {/* Next Step Action */}
-      <div className="flex justify-end gap-3 pt-2">
-        <a
-          href={`/student/solve?concept_id=${lesson.concept_id}`}
-          className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold"
-        >
-          <span>{t('ready_to_solve')}</span>
-          <ArrowRight className="w-4 h-4" />
-        </a>
+        {/* Explanation Style Tabs */}
+        <div className="flex flex-wrap gap-1.5 p-1 bg-[#faedcd]/40 border border-[#ccd5ae] rounded-lg text-xs">
+          {(['simple', 'detailed', 'visual', 'analogy', 'worked_example'] as ExplanationStyle[]).map((style) => (
+            <button
+              key={style}
+              onClick={() => setSelectedStyle(style)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
+                selectedStyle === style
+                  ? 'bg-[#d4a373] text-[#000000] border border-[#ccd5ae] shadow-2xs'
+                  : 'bg-white border border-[#ccd5ae] text-[#333333] hover:bg-[#e9edc9]'
+              }`}
+            >
+              {styleIcons[style]}
+              <span>{styleLabels[style]}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Active Explanation Reading Area */}
+        <div className="card p-5 bg-white border border-[#ccd5ae] space-y-3 text-[#000000]">
+          <div className="border-b border-[#ccd5ae] pb-2 flex items-center justify-between">
+            <h2 className="text-base font-bold text-[#000000]">{currentExplanation.title}</h2>
+            <span className="text-[11px] text-[#333333] uppercase">
+              Mode: {styleLabels[selectedStyle]}
+            </span>
+          </div>
+          <div className="prose max-w-none text-xs sm:text-sm text-[#000000] leading-relaxed whitespace-pre-line">
+            {currentExplanation.content}
+          </div>
+        </div>
+
+        {/* Important Formulas & Laws */}
+        {lesson.extra?.formulas && lesson.extra.formulas.length > 0 && (
+          <div className="card p-4 bg-white border border-[#ccd5ae] space-y-2.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#333333]">
+              Formulas & Mathematical Rules
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+              {lesson.extra.formulas.map((f, i) => (
+                <div key={i} className="p-3 rounded border border-[#ccd5ae] bg-[#faedcd]/20 space-y-1">
+                  <div className="font-bold text-[#000000]">{f.name}</div>
+                  <div className="p-2 rounded bg-white font-mono font-bold text-[#000000] border border-[#ccd5ae]">
+                    {f.formula}
+                  </div>
+                  <div className="text-[11px] text-[#333333]">{f.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Definitions & Terminology */}
+        {lesson.extra?.definitions && lesson.extra.definitions.length > 0 && (
+          <div className="card p-4 bg-white border border-[#ccd5ae] space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#333333]">
+              Key Terminology & Definitions
+            </h3>
+            <div className="divide-y divide-[#ccd5ae]/40 text-xs">
+              {lesson.extra.definitions.map((d, i) => (
+                <div key={i} className="py-2 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4">
+                  <span className="font-bold text-[#000000] min-w-[130px] shrink-0">{d.term}</span>
+                  <span className="text-[#333333]">{d.meaning}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Comprehension Check */}
+        <div className="card p-5 bg-white border border-[#ccd5ae] space-y-3 text-[#000000]">
+          <div className="flex items-center justify-between border-b border-[#ccd5ae] pb-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#000000]">
+              Concept Check
+            </h3>
+            <span className="text-[11px] text-[#333333]">Quick Self-Test</span>
+          </div>
+
+          <p className="text-xs sm:text-sm font-semibold text-[#000000]">
+            {lesson.comprehension_check.question}
+          </p>
+
+          <div className="space-y-1.5">
+            {lesson.comprehension_check.options.map((option, idx) => {
+              let style = 'bg-[#fefae0]/40 border-[#ccd5ae] text-[#000000] hover:bg-[#e9edc9]'
+              if (hasAnswered) {
+                if (idx === lesson.comprehension_check.correct_index) {
+                  style = 'bg-[#ccd5ae] border-[#ccd5ae] text-[#000000] font-bold'
+                } else if (idx === selectedAnswer) {
+                  style = 'bg-red-100 border-red-300 text-[#000000] font-bold'
+                } else {
+                  style = 'opacity-50 border-[#ccd5ae] text-[#333333]'
+                }
+              }
+
+              return (
+                <button
+                  key={idx}
+                  disabled={hasAnswered}
+                  onClick={() => {
+                    setSelectedAnswer(idx)
+                    setHasAnswered(true)
+                  }}
+                  className={`w-full text-left p-3 rounded-md border text-xs transition-all flex items-center justify-between cursor-pointer ${style}`}
+                >
+                  <span>{option}</span>
+                  {hasAnswered && idx === lesson.comprehension_check.correct_index && (
+                    <CheckCircle className="w-4 h-4 text-[#000000] shrink-0" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {hasAnswered && (
+            <div className="p-3 bg-[#faedcd]/40 border border-[#ccd5ae] rounded text-xs space-y-0.5">
+              <span className="font-bold text-[#000000]">Explanation:</span>
+              <p className="text-[#333333] leading-relaxed">{lesson.comprehension_check.explanation}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Previous and Next Navigation */}
+        <div className="flex items-center justify-between pt-4 border-t border-[#ccd5ae]">
+          {prevConcept ? (
+            <button
+              onClick={() => selectConcept(prevConcept.id)}
+              className="btn-secondary text-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Previous: {loc(prevConcept)}
+            </button>
+          ) : (
+            <div />
+          )}
+
+          {nextConcept ? (
+            <button
+              onClick={() => selectConcept(nextConcept.id)}
+              className="btn-primary text-xs"
+            >
+              Next: {loc(nextConcept)}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/student/practice')}
+              className="btn-primary text-xs"
+            >
+              Go to Practice Arena
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

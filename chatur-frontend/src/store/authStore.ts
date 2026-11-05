@@ -9,6 +9,8 @@ export interface AuthUser {
   preferred_lang: Lang
   school_id: string | null
   display_name?: string
+  name?: string
+  email?: string
 }
 
 interface AuthState {
@@ -18,6 +20,7 @@ interface AuthState {
   lang: Lang
   setAuth: (user: AuthUser, accessToken: string, refreshToken: string) => void
   setTokens: (accessToken: string, refreshToken: string) => void
+  updateUser: (updates: Partial<AuthUser>) => void
   setLang: (lang: Lang) => void
   logout: () => void
 }
@@ -30,9 +33,14 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       lang: 'en',
       setAuth: (user, accessToken, refreshToken) =>
-        set({ user, accessToken, refreshToken, lang: user.preferred_lang }),
+        set({ user, accessToken, refreshToken, lang: user.preferred_lang || 'en' }),
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken }),
+      updateUser: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+          lang: (updates.preferred_lang as Lang) || state.lang,
+        })),
       setLang: (lang) => set({ lang }),
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
     }),

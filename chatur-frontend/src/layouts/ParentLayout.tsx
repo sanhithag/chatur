@@ -7,7 +7,6 @@ export default function ParentLayout() {
   return (
     <AppShell
       roleLabel={t('role_parent')}
-      accentClass="bg-emerald-700"
       navItems={[
         { to: '/parent/dashboard', label: t('nav_dashboard'), icon: <LayoutDashboard className="w-4 h-4" /> },
         { to: '/parent/progress',  label: t('nav_progress'),  icon: <TrendingUp className="w-4 h-4" /> },

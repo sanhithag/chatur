@@ -1,10 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Users, AlertTriangle, ClipboardList, BookOpen, Check, X, Clock } from 'lucide-react'
-import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Users, AlertTriangle, ClipboardList, BookOpen } from 'lucide-react'
 import api from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
 import { useI18n } from '@/i18n/I18nProvider'
-import PageHeader from '@/components/PageHeader'
 import StatCard from '@/components/StatCard'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorMessage from '@/components/ErrorMessage'
@@ -30,30 +28,40 @@ export default function TeacherDashboard() {
   const attentionStudents: Array<{ student_name: string; gap_count: number }> = data?.students_needing_attention ?? []
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <PageHeader title={t('class_overview')} subtitle={`${summary.section_name ?? ''} · ${summary.academic_year ?? ''}`} />
+    <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
+      <div className="border-b border-[#ccd5ae] pb-4">
+        <h1 className="text-2xl font-black text-[#000000] flex items-center gap-2">
+          <BookOpen className="w-6 h-6 text-[#000000]" />
+          Class Overview
+        </h1>
+        <p className="text-xs sm:text-sm text-[#333333] mt-1">
+          {summary.section_name ?? 'Class 9-A'} • {summary.academic_year ?? '2025-2026'}
+        </p>
+      </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={<Users className="w-5 h-5 text-primary-600" />} label={t('total_students')} value={summary.total_students ?? 0} bg="bg-primary-50" />
-        <StatCard icon={<ClipboardList className="w-5 h-5 text-amber-600" />} label={t('pending_reviews')} value={summary.pending_proposals ?? 0} bg="bg-amber-50" />
-        <StatCard icon={<AlertTriangle className="w-5 h-5 text-red-500" />} label={t('concepts_with_gaps')} value={gapConcepts.length} bg="bg-red-50" />
-        <StatCard icon={<BookOpen className="w-5 h-5 text-accent-600" />} label={t('students_attention')} value={attentionStudents.length} bg="bg-accent-50" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <StatCard icon={<Users className="w-5 h-5 text-[#000000]" />} label={t('total_students')} value={summary.total_students ?? 0} />
+        <StatCard icon={<ClipboardList className="w-5 h-5 text-[#000000]" />} label={t('pending_reviews')} value={summary.pending_proposals ?? 0} />
+        <StatCard icon={<AlertTriangle className="w-5 h-5 text-[#000000]" />} label={t('concepts_with_gaps')} value={gapConcepts.length} />
+        <StatCard icon={<BookOpen className="w-5 h-5 text-[#000000]" />} label={t('students_attention')} value={attentionStudents.length} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Concepts with widespread gaps */}
-        <div className="card">
-          <div className="card-header">
-            <h2 className="text-base font-semibold text-slate-900">{t('concepts_with_gaps')}</h2>
+        <div className="card bg-white border border-[#ccd5ae]">
+          <div className="card-header bg-[#faedcd]/40 border-b border-[#ccd5ae] p-4">
+            <h2 className="text-base font-bold text-[#000000]">{t('concepts_with_gaps')}</h2>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[#ccd5ae]">
             {gapConcepts.length === 0 ? (
-              <div className="p-4 text-sm text-slate-500">{t('no_data')}</div>
+              <div className="p-4 text-xs text-[#333333]">{t('no_data')}</div>
             ) : (
               gapConcepts.map((c) => (
                 <div key={c.concept_name} className="px-5 py-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-800">{c.concept_name}</span>
-                  <span className="badge badge-red">{c.student_count} students</span>
+                  <span className="text-xs font-bold text-[#000000]">{c.concept_name}</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#faedcd] text-[#000000] border border-[#ccd5ae]">
+                    {c.student_count} students
+                  </span>
                 </div>
               ))
             )}
@@ -61,18 +69,20 @@ export default function TeacherDashboard() {
         </div>
 
         {/* Students needing attention */}
-        <div className="card">
-          <div className="card-header">
-            <h2 className="text-base font-semibold text-slate-900">{t('students_attention')}</h2>
+        <div className="card bg-white border border-[#ccd5ae]">
+          <div className="card-header bg-[#faedcd]/40 border-b border-[#ccd5ae] p-4">
+            <h2 className="text-base font-bold text-[#000000]">{t('students_attention')}</h2>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[#ccd5ae]">
             {attentionStudents.length === 0 ? (
-              <div className="p-4 text-sm text-slate-500">{t('no_data')}</div>
+              <div className="p-4 text-xs text-[#333333]">{t('no_data')}</div>
             ) : (
               attentionStudents.map((s) => (
                 <div key={s.student_name} className="px-5 py-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-800">{s.student_name}</span>
-                  <span className="badge badge-amber">{s.gap_count} gaps</span>
+                  <span className="text-xs font-bold text-[#000000]">{s.student_name}</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#e9edc9] text-[#000000] border border-[#ccd5ae]">
+                    {s.gap_count} gaps
+                  </span>
                 </div>
               ))
             )}

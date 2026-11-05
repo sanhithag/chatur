@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, List, Optional
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -42,6 +42,9 @@ class StudentProfile(Base):
     )
     masteries: Mapped[List["StudentMastery"]] = relationship(
         "StudentMastery", back_populates="student", cascade="all, delete-orphan"
+    )
+    tasks: Mapped[List["StudentTask"]] = relationship(
+        "StudentTask", back_populates="student", cascade="all, delete-orphan"
     )
 
 
@@ -141,3 +144,29 @@ class ParentChildLink(Base):
     @property
     def relationship(self) -> str:
         return self.relation_type
+
+
+class StudentTask(Base):
+    __tablename__ = "student_tasks"
+
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    student_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("student_profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    task_type: Mapped[str] = mapped_column(String(50), default="manual")  # manual, lesson, practice, test, revision
+    link_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # chapter, topic, concept, practice, test
+    link_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    link_payload: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    is_completed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    due_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    student: Mapped["StudentProfile"] = relationship("StudentProfile", back_populates="tasks")
+

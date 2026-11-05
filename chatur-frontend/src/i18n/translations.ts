@@ -7,6 +7,18 @@ export type Lang = 'en' | 'te' | 'hi'
 type TranslationMap = Record<string, Record<Lang, string>>
 
 export const translations: TranslationMap = {
+  // ── Subject navigator & content status ─────────────────────────────────────
+  nav_subject:        { en: 'Subject', te: 'సబ్జెక్టు', hi: 'विषय' },
+  nav_class:          { en: 'Class', te: 'తరగతి', hi: 'कक्षा' },
+  nav_chapter:        { en: 'Chapter', te: 'అధ్యాయం', hi: 'अध्याय' },
+  nav_concept:        { en: 'Concept', te: 'భావన', hi: 'संकल्पना' },
+  nav_recommended:    { en: 'Recommended next', te: 'తదుపరి సిఫార్సు', hi: 'अगला सुझाव' },
+  lesson_pending:     { en: 'This lesson is not available yet.', te: 'ఈ పాఠం ఇంకా అందుబాటులో లేదు.', hi: 'यह पाठ अभी उपलब्ध नहीं है।' },
+  translation_fallback: { en: 'Translation unavailable right now — showing the original English lesson.', te: 'అనువాదం ప్రస్తుతం అందుబాటులో లేదు — అసలు ఆంగ్ల పాఠం చూపబడుతోంది.', hi: 'अनुवाद अभी उपलब्ध नहीं है — मूल अंग्रेज़ी पाठ दिखाया जा रहा है।' },
+  lesson_summary:     { en: 'Summary', te: 'సారాంశం', hi: 'सारांश' },
+  lesson_definitions: { en: 'Key Definitions', te: 'ముఖ్య నిర్వచనాలు', hi: 'मुख्य परिभाषाएँ' },
+  lesson_misconceptions: { en: 'Common Misconceptions', te: 'సాధారణ అపోహలు', hi: 'सामान्य भ्रांतियाँ' },
+  lesson_objectives:  { en: 'Learning Objectives', te: 'అభ్యసన లక్ష్యాలు', hi: 'सीखने के उद्देश्य' },
   // ── App & Auth ──────────────────────────────────────────────────────────────
   app_name:         { en: 'CHATUR', te: 'చతుర్', hi: 'चतुर' },
   app_tagline:      { en: 'Every learner. Every concept. Their own learning path.',
@@ -25,10 +37,17 @@ export const translations: TranslationMap = {
   signing_in:       { en: 'Signing in…', te: 'సైన్ ఇన్ అవుతోంది…', hi: 'साइन इन हो रहा है…' },
 
   // ── Navigation ──────────────────────────────────────────────────────────────
+  nav_home:         { en: 'Home', te: 'హోమ్', hi: 'होम' },
   nav_dashboard:    { en: 'Dashboard', te: 'డాష్‌బోర్డ్', hi: 'डैशबोर्ड' },
   nav_learn:        { en: 'Learn', te: 'నేర్చుకోండి', hi: 'सीखें' },
-  nav_solve:        { en: 'Solve', te: 'సాధించండి', hi: 'हल करें' },
-  nav_test:         { en: 'Test', te: 'పరీక్ష', hi: 'परीक्षा' },
+  nav_practice:     { en: 'Practice', te: 'అభ్యాసం', hi: 'अभ्यास' },
+  nav_solve:        { en: 'Practice', te: 'అభ్యాసం', hi: 'अभ्यास' },
+  nav_test:         { en: 'Weekly Tests', te: 'వారపు పరీక్షలు', hi: 'साप्ताहिक टेस्ट' },
+  nav_weekly_tests: { en: 'Weekly Tests', te: 'వారపు పరీక్షలు', hi: 'साप्ताहिक टेस्ट' },
+  nav_my_progress:  { en: 'My Progress', te: 'నా పురోగతి', hi: 'मेरी प्रगति' },
+  nav_todo:         { en: 'To-do List', te: 'చేయవలసిన పనులు', hi: 'कार्य सूची' },
+  nav_search:       { en: 'Search', te: 'శోధించండి', hi: 'खोजें' },
+  nav_profile:      { en: 'Profile / Account', te: 'ప్రొఫైల్ / ఖాతా', hi: 'प्रोफ़ाइल / खाता' },
   nav_students:     { en: 'Students', te: 'విద్యార్థులు', hi: 'छात्र' },
   nav_heatmap:      { en: 'Class Heatmap', te: 'తరగతి హీట్‌మ్యాప్', hi: 'कक्षा हीटमैप' },
   nav_review:       { en: 'Review Queue', te: 'సమీక్ష క్యూ', hi: 'समीक्षा कतार' },

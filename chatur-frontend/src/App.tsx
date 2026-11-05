@@ -8,7 +8,11 @@ import AdminLayout from './layouts/AdminLayout'
 import StudentDashboard from './pages/student/StudentDashboard'
 import StudentLearn from './pages/student/StudentLearn'
 import StudentSolve from './pages/student/StudentSolve'
+import StudentPractice from './pages/student/StudentPractice'
 import StudentTest from './pages/student/StudentTest'
+import StudentProgress from './pages/student/StudentProgress'
+import StudentTodoList from './pages/student/StudentTodoList'
+import ProfilePage from './pages/ProfilePage'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
 import TeacherHeatmap from './pages/teacher/TeacherHeatmap'
 import TeacherReviewQueue from './pages/teacher/TeacherReviewQueue'
@@ -44,7 +48,11 @@ export default function App() {
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="learn" element={<StudentLearn />} />
           <Route path="solve" element={<StudentSolve />} />
+          <Route path="practice" element={<StudentPractice />} />
           <Route path="test" element={<StudentTest />} />
+          <Route path="progress" element={<StudentProgress />} />
+          <Route path="tasks" element={<StudentTodoList />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Teacher routes */}
@@ -55,11 +63,15 @@ export default function App() {
         }>
           <Route index element={<TeacherDashboard />} />
           <Route path="dashboard" element={<TeacherDashboard />} />
+          <Route path="learn" element={<StudentLearn />} />
+          <Route path="practice" element={<StudentPractice />} />
+          <Route path="test" element={<StudentTest />} />
           <Route path="heatmap" element={<TeacherHeatmap />} />
           <Route path="review" element={<TeacherReviewQueue />} />
           <Route path="groups" element={<TeacherGroups />} />
           <Route path="content" element={<TeacherContent />} />
           <Route path="impact" element={<TeacherImpact />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Parent routes */}
@@ -70,6 +82,7 @@ export default function App() {
         }>
           <Route index element={<ParentDashboard />} />
           <Route path="dashboard" element={<ParentDashboard />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Admin routes */}
@@ -83,6 +96,7 @@ export default function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="curriculum" element={<AdminCurriculum />} />
           <Route path="schools" element={<AdminSchools />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Root redirect */}

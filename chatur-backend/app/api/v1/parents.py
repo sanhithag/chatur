@@ -20,6 +20,11 @@ async def get_parent_children(
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user),
 ):
+    if current_user.role not in ("admin", "super_admin") and current_user.id != parent_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Cannot view another parent's children.",
+        )
     stmt = (
         select(ParentChildLink)
         .where(ParentChildLink.parent_user_id == parent_id)
@@ -60,6 +65,11 @@ async def get_child_progress(
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user),
 ):
+    if current_user.role not in ("admin", "super_admin") and current_user.id != parent_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Cannot view another parent's child data.",
+        )
     # Verify link
     link_stmt = select(ParentChildLink).where(
         ParentChildLink.parent_user_id == parent_id,
@@ -156,3 +166,43 @@ async def get_child_progress(
         "concepts": concept_details,
         "concept_progress": concept_details,
     }
+
+
+@router.post("/{parent_id}/link-child")
+async def link_child_to_parent(
+    parent_id: str,
+    payload: Dict[str, str],
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+):
+    student_username = payload.get("username", "").strip()
+    relation_type = payload.get("relation_type", "parent").strip()
+    if not student_username:
+        raise HTTPException(status_code=400, detail="Student username is required")
+
+    st_stmt = select(UserAccount).where(UserAccount.username == student_username, UserAccount.role == "student")
+    st_user = (await db.execute(st_stmt)).scalar_one_or_none()
+    if not st_user:
+        raise HTTPException(status_code=404, detail="Student user not found")
+
+    sp_stmt = select(StudentProfile).where(StudentProfile.user_id == st_user.id)
+    student = (await db.execute(sp_stmt)).scalar_one_or_none()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    # Check if already linked
+    ex_stmt = select(ParentChildLink).where(ParentChildLink.parent_user_id == parent_id, ParentChildLink.student_id == student.id)
+    existing = (await db.execute(ex_stmt)).scalar_one_or_none()
+    if existing:
+        return {"message": "Child already linked to parent account", "student_id": student.id}
+
+    link = ParentChildLink(
+        parent_user_id=parent_id,
+        student_id=student.id,
+        relation_type=relation_type,
+        consent_given=True,
+    )
+    db.add(link)
+    await db.commit()
+    return {"message": f"Successfully linked {st_user.name or st_user.username}", "student_id": student.id}
+

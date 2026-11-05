@@ -1,0 +1,350 @@
+[
+ {
+  "subject": "SCI",
+  "grade": 10,
+  "source": "NCERT Science Textbook for Class X (jesc1), reprint 2026-27",
+  "units": [
+   {
+    "unit_no": 1,
+    "name": "Chemistry",
+    "chapters": [
+     {
+      "no": 1,
+      "name": "Chemical Reactions and Equations",
+      "topics": []
+     },
+     {
+      "no": 2,
+      "name": "Acids, Bases and Salts",
+      "topics": []
+     },
+     {
+      "no": 3,
+      "name": "Metals and Non-metals",
+      "topics": []
+     },
+     {
+      "no": 4,
+      "name": "Carbon and its Compounds",
+      "topics": []
+     }
+    ]
+   },
+   {
+    "unit_no": 2,
+    "name": "Biology",
+    "chapters": [
+     {
+      "no": 5,
+      "name": "Life Processes",
+      "topics": []
+     },
+     {
+      "no": 6,
+      "name": "Control and Coordination",
+      "topics": []
+     },
+     {
+      "no": 7,
+      "name": "How do Organisms Reproduce?",
+      "topics": []
+     },
+     {
+      "no": 8,
+      "name": "Heredity",
+      "topics": []
+     },
+     {
+      "no": 13,
+      "name": "Our Environment",
+      "topics": []
+     }
+    ]
+   },
+   {
+    "unit_no": 3,
+    "name": "Physics",
+    "chapters": [
+     {
+      "no": 9,
+      "name": "Light – Reflection and Refraction",
+      "topics": []
+     },
+     {
+      "no": 10,
+      "name": "The Human Eye and the Colourful World",
+      "topics": []
+     },
+     {
+      "no": 11,
+      "name": "Electricity",
+      "topics": []
+     },
+     {
+      "no": 12,
+      "name": "Magnetic Effects of Electric Current",
+      "topics": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "subject": "MATH",
+  "grade": 10,
+  "source": "NCERT Mathematics Textbook for Class X (jemh1)",
+  "units": [
+   {
+    "unit_no": 1,
+    "name": "Mathematics",
+    "chapters": [
+     {
+      "no": 1,
+      "name": "Real Numbers",
+      "topics": [
+       "The Fundamental Theorem of Arithmetic",
+       "Revisiting Irrational Numbers"
+      ]
+     },
+     {
+      "no": 2,
+      "name": "Polynomials",
+      "topics": [
+       "Geometrical Meaning of the Zeroes of a Polynomial",
+       "Relationship between Zeroes and Coefficients of a Polynomial"
+      ]
+     },
+     {
+      "no": 3,
+      "name": "Pair of Linear Equations in Two Variables",
+      "topics": [
+       "Graphical Method of Solution of a Pair of Linear Equations",
+       "Algebraic Methods of Solving a Pair of Linear Equations"
+      ]
+     },
+     {
+      "no": 4,
+      "name": "Quadratic Equations",
+      "topics": [
+       "Quadratic Equations",
+       "Solution of a Quadratic Equation by Factorisation",
+       "Nature of Roots"
+      ]
+     },
+     {
+      "no": 5,
+      "name": "Arithmetic Progressions",
+      "topics": [
+       "Arithmetic Progressions",
+       "Sum of First n Terms of an AP"
+      ]
+     },
+     {
+      "no": 6,
+      "name": "Triangles",
+      "topics": [
+       "Similar Figures",
+       "Similarity of Triangles",
+       "Criteria for Similarity of Triangles"
+      ]
+     },
+     {
+      "no": 7,
+      "name": "Coordinate Geometry",
+      "topics": [
+       "Distance Formula",
+       "Section Formula"
+      ]
+     },
+     {
+      "no": 8,
+      "name": "Introduction to Trigonometry",
+      "topics": [
+       "Trigonometric Ratios",
+       "Trigonometric Ratios of Some Specific Angles",
+       "Trigonometric Identities"
+      ]
+     },
+     {
+      "no": 9,
+      "name": "Some Applications of Trigonometry",
+      "topics": [
+       "Heights and Distances"
+      ]
+     },
+     {
+      "no": 10,
+      "name": "Circles",
+      "topics": [
+       "Tangent to a Circle",
+       "Number of Tangents from a Point on a Circle"
+      ]
+     },
+     {
+      "no": 11,
+      "name": "Areas Related to Circles",
+      "topics": [
+       "Areas of Sector and Segment of a Circle"
+      ]
+     },
+     {
+      "no": 12,
+      "name": "Surface Areas and Volumes",
+      "topics": [
+       "Surface Area of a Combination of Solids"
+      ]
+     },
+     {
+      "no": 13,
+      "name": "Statistics",
+      "topics": [
+       "Mean of Grouped Data",
+       "Mode of Grouped Data",
+       "Median of Grouped Data"
+      ]
+     },
+     {
+      "no": 14,
+      "name": "Probability",
+      "topics": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "subject": "SST",
+  "grade": 9,
+  "source": "NCERT Understanding Society: India and Beyond, Grade 9 Part 1 (iest1)",
+  "units": [
+   {
+    "unit_no": 1,
+    "name": "Introduction",
+    "chapters": [
+     {
+      "no": 1,
+      "name": "Understanding Social Science",
+      "topics": []
+     }
+    ]
+   },
+   {
+    "unit_no": 2,
+    "name": "Geography",
+    "chapters": [
+     {
+      "no": 2,
+      "name": "Shaping of the Earth’s Surface",
+      "topics": []
+     },
+     {
+      "no": 3,
+      "name": "Atmosphere and Climate",
+      "topics": []
+     }
+    ]
+   },
+   {
+    "unit_no": 3,
+    "name": "History",
+    "chapters": [
+     {
+      "no": 4,
+      "name": "Early Humans and Beginning of Civilisation",
+      "topics": []
+     },
+     {
+      "no": 5,
+      "name": "State and Society up to 1000 CE",
+      "topics": []
+     }
+    ]
+   },
+   {
+    "unit_no": 4,
+    "name": "Political Science",
+    "chapters": [
+     {
+      "no": 6,
+      "name": "Democracy: The Big Questions",
+      "topics": []
+     },
+     {
+      "no": 7,
+      "name": "Elections: The Big Questions",
+      "topics": []
+     }
+    ]
+   },
+   {
+    "unit_no": 5,
+    "name": "Economics",
+    "chapters": [
+     {
+      "no": 8,
+      "name": "Building Blocks in Economics: The Problem of Choice",
+      "topics": []
+     },
+     {
+      "no": 9,
+      "name": "The Price Puzzle: What Drives the Market",
+      "topics": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "subject": "ENG",
+  "grade": 9,
+  "source": "NCERT Kaveri: Textbook of English for Grade 9 (iebe1)",
+  "units": [
+   {
+    "unit_no": 1,
+    "name": "Kaveri Units 1-8",
+    "chapters": [
+     {
+      "no": 1,
+      "name": "How I Taught My Grandmother to Read",
+      "topics": []
+     },
+     {
+      "no": 2,
+      "name": "The Pot Maker",
+      "topics": []
+     },
+     {
+      "no": 3,
+      "name": "Winds of Change",
+      "topics": []
+     },
+     {
+      "no": 4,
+      "name": "Vitamin-M",
+      "topics": []
+     },
+     {
+      "no": 5,
+      "name": "The World of Limitless Possibilities",
+      "topics": []
+     },
+     {
+      "no": 6,
+      "name": "Twin Melodies",
+      "topics": []
+     },
+     {
+      "no": 7,
+      "name": "Carrier of Words",
+      "topics": []
+     },
+     {
+      "no": 8,
+      "name": "Follow That Dream",
+      "topics": []
+     }
+    ]
+   }
+  ]
+ }
+]

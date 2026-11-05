@@ -64,11 +64,17 @@ htmlcov/
 
 # Database Files & SQLite Run-time DBs
 *.db
+*.db.bak
 *.db-journal
 *.sqlite
 *.sqlite3
 chatur-backend/chatur.db
 chatur-backend/*.db
+
+# NCERT Raw Source PDFs & Zips (1.4GB - grounded reference files only)
+chatur-backend/ncert_sources/
+ncert_sources/
+*.zip
 
 # Backend Logs & Environments
 chatur-backend/.env
